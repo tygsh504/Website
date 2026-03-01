@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CropGuard AI - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <span class="logo-icon">🌿</span> <strong>CropGuard AI</strong>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="{{ url_for('dashboard') }}" class="active">Home</a></li>
+                <li><a href="#">Upload</a></li>
+                <li><a href="#">Results</a></li>
+                <li><a href="#">Disease Map</a></li>
+            </ul>
+
+            <div class="user-actions">
+                <span class="user-email">{{ user_email }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <span class="icon">⏻</span> Logout
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="hero-section">
+        <div class="hero-content">
+            <h1 class="main-title">Intelligent Crop Disease Segmentation</h1>
+            <h2 class="sub-title">Powered by <span class="accent-text">Deep Learning</span></h2>
+            
+            <p class="description">
+                Advanced lightweight segmentation model for real-time crop leaf disease 
+                identification with GPS-based location mapping
+            </p>
+
+            <div class="cta-buttons">
+                <form action="{{ url_for('upload_leaf') }}" method="POST" enctype="multipart/form-data" class="upload-form">
+                    <label for="file-upload" class="btn btn-primary cursor-pointer">
+                        <span class="icon">📷</span> Upload Image
+                    </label>
+                    <input id="file-upload" type="file" name="leaf_image" accept="image/*" style="display: none;">
+                </form>
+                
+                <button class="btn btn-secondary">
+                    <span class="icon">▶</span> View Demo
+                </button>
+            </div>
+        </div>
+        <div class="scroll-indicator">↓</div>
+    </main>
+</body>
+</html>

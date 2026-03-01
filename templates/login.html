@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CropGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-wrapper">
+                <span class="logo-icon">🌿</span> 
+                <strong>CropGuard AI</strong>
+            </div>
+            <h1>Crop Disease<br>Segmentation</h1>
+            <p>AI-Powered Leaf Analysis Platform</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="error-message">
+              {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('login') }}" method="POST" class="login-form">
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="user@gmail.com" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="••••••••••••" required>
+            </div>
+
+            <div class="form-options">
+                <label><input type="checkbox"> Remember me</label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="sign-in-btn">
+                <span class="btn-icon">➔</span> Sign In
+            </button>
+        </form>
+
+        <p class="signup-text">Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+        
+        <div class="divider"><span>Or continue with</span></div>
+    </div>
+</body>
+</html>
