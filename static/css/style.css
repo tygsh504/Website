@@ -354,3 +354,288 @@
     40% { transform: translateY(-10px); }
     60% { transform: translateY(-5px); }
 }
+
+/* ========================================================= */
+/* --- NEW SCROLLABLE SECTIONS (Dashboard Landing Page) ---  */
+/* ========================================================= */
+
+/* --- 1. About / Project Section --- */
+.about-section {
+    background-color: white;
+    color: #111827;
+    padding: 100px 50px;
+}
+
+.about-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 60px;
+}
+
+.about-title {
+    flex: 1;
+}
+
+.section-label {
+    color: #6b7280;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.about-title h2 {
+    font-size: 3.8rem;
+    line-height: 1.1;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* Recreates the elegant italic styling from the video */
+.serif-italic {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    color: #4b5563;
+}
+
+.about-text {
+    flex: 1.5;
+    font-size: 1.15rem;
+    color: #4b5563;
+    line-height: 1.8;
+}
+
+.about-text p {
+    margin-bottom: 20px;
+}
+
+.about-text strong {
+    color: #111827;
+}
+
+/* --- 2. Statistics Section --- */
+.stats-section {
+    background-color: #f9fafb;
+    padding: 70px 50px;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.stats-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.stat-item h3 {
+    font-size: 3.5rem;
+    color: #1b332a; /* Dark Green */
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.stat-item p {
+    color: #4b5563;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* --- 3. Key Features Section --- */
+.features-section {
+    background-color: white;
+    padding: 100px 50px;
+    color: #111827;
+}
+
+.features-section h2 {
+    text-align: center;
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 70px;
+}
+
+.features-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 30px;
+    justify-content: space-between;
+}
+
+.feature-card {
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    flex: 1;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+.feature-icon {
+    background: #e6f4ea; /* Light Green */
+    color: #1b332a; /* Dark Green */
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.feature-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: #111827;
+}
+
+.feature-card p {
+    color: #6b7280;
+    line-height: 1.6;
+    font-size: 1.05rem;
+}
+
+/* --- 4. CTA (Call To Action) Section --- */
+.cta-section {
+    background-color: #3b6952; /* Matching the video's green */
+    color: white;
+    text-align: center;
+    padding: 90px 20px;
+}
+
+.cta-section h2 {
+    font-size: 2.8rem;
+    margin-bottom: 15px;
+}
+
+.cta-section p {
+    font-size: 1.25rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.btn-upload-large {
+    background: white;
+    color: #3b6952;
+    padding: 16px 36px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn-upload-large:hover {
+    background: #f3f4f6;
+    transform: scale(1.02);
+}
+
+/* --- 5. Footer Section --- */
+.site-footer {
+    background-color: #1b332a; /* Dark forest green */
+    color: white;
+    padding: 70px 50px 30px;
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    padding-bottom: 50px;
+    margin-bottom: 25px;
+}
+
+.footer-col h3 {
+    font-size: 1.6rem;
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+.footer-col h4 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: #86efac; /* Mint green accent */
+    font-weight: 600;
+}
+
+.contact-person {
+    margin-bottom: 35px;
+}
+
+.contact-person p, .location-info p {
+    color: rgba(255,255,255,0.75);
+    line-height: 1.8;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
+
+.footer-nav {
+    list-style: none;
+}
+
+.footer-nav li {
+    margin-bottom: 15px;
+}
+
+.footer-nav a {
+    color: rgba(255,255,255,0.75);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.3s;
+    font-size: 1rem;
+}
+
+.footer-nav a:hover {
+    color: white;
+}
+
+.footer-bottom {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.footer-links a, .footer-legal a, .copyright {
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.footer-links a {
+    margin-right: 20px;
+}
+
+.footer-legal a {
+    margin-left: 20px;
+}
+
+.footer-links a:hover, .footer-legal a:hover {
+    color: white;
+}
