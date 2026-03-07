@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>History - CropGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="upload-page-body">
+    <header>
+        <nav class="navbar navbar-solid">
+            <div class="logo"><span class="logo-icon">🌿</span> <strong>CropGuard AI</strong></div>
+            <div class="user-actions"><span class="user-name">{{ user_name }}</span><a href="{{ url_for('logout') }}" class="logout-btn">Logout</a></div>
+        </nav>
+    </header>
+
+    <main class="upload-container" style="max-width: 1000px;">
+        <div class="upload-header">
+            <h2>Your Analysis History</h2>
+            <p>Grouped by upload date</p>
+        </div>
+
+        {% if not history_data %}
+            <div class="empty-history"><div class="icon">🏜️</div><p>No history yet.</p></div>
+        {% else %}
+            {% for entry in history_data %}
+                <div class="history-date-group">
+                    <h3 class="date-divider">📅 {{ entry.date }}</h3>
+                    <div class="history-grid">
+                        {% for file in entry.files %}
+                            <div class="history-item">
+                                <img src="{{ file.thumbnailLink }}" alt="Scan">
+                                <p>{{ file.name }}</p>
+                                <a href="{{ file.webViewLink }}" target="_blank">View in Drive</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </main>
+</body>
+</html>

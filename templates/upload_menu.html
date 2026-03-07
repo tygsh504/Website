@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Select Upload Method - CropGuard AI</title>
+    <title>Upload Menu - CropGuard AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -17,43 +17,40 @@
                     <div class="dropdown-content">
                         <a href="{{ url_for('upload_image') }}">Upload by Image</a>
                         <a href="{{ url_for('upload_folder') }}">Upload by Folder</a>
+                        <a href="{{ url_for('history') }}">Upload History</a>
                     </div>
                 </li>
-                <li><a href="#">Results</a></li>
-                <li><a href="#">Disease Map</a></li>
             </ul>
             <div class="user-actions">
                 <span class="user-name">{{ user_name }}</span>
-                <a href="{{ url_for('logout') }}" class="logout-btn"><span class="icon">⏻</span> Logout</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
             </div>
         </nav>
     </header>
 
-    <main class="upload-container" style="max-width: 900px;">
-        <div class="upload-header" style="text-align: center; margin-bottom: 50px;">
-            <h2>Select Upload Method</h2>
-            <p>Choose how you want to upload your crop images for disease segmentation</p>
+    <main class="upload-container" style="max-width: 1100px;">
+        <div class="upload-header" style="text-align: center;">
+            <h2>Choose Action</h2>
+            <p>Select your preferred method or view your records</p>
         </div>
 
         <div class="upload-options-wrapper">
             <a href="{{ url_for('upload_image') }}" class="upload-card">
                 <div class="icon">📄</div>
                 <h3>Upload by Image</h3>
-                <p>Upload one image by one image. Ideal for real-time field analysis and immediate results.</p>
+                <p>One by one upload for real-time results.</p>
             </a>
-
             <a href="{{ url_for('upload_folder') }}" class="upload-card">
                 <div class="icon">📁</div>
                 <h3>Upload by Folder</h3>
-                <p>Upload all the images in a folder. Ideal for batch processing large datasets simultaneously.</p>
+                <p>Batch upload entire folders of crop data.</p>
+            </a>
+            <a href="{{ url_for('history') }}" class="upload-card">
+                <div class="icon">⏳</div>
+                <h3>Upload History</h3>
+                <p>View your previous uploads and analysis by date.</p>
             </a>
         </div>
     </main>
-
-    <footer class="site-footer" style="margin-top: auto;">
-        <div class="footer-bottom" style="border-top: none; padding-top: 0; margin-bottom: 0;">
-            <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
-        </div>
-    </footer>
 </body>
 </html>
