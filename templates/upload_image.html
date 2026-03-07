@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Image - CropGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="upload-page-body">
+    <header>
+        <nav class="navbar navbar-solid">
+            <div class="logo"><span class="logo-icon">🌿</span> <strong>CropGuard AI</strong></div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('root') }}">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn active">Upload ▾</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('upload_image') }}">Upload by Image</a>
+                        <a href="{{ url_for('upload_folder') }}">Upload by Folder</a>
+                    </div>
+                </li>
+                <li><a href="#">Results</a></li>
+                <li><a href="#">Disease Map</a></li>
+            </ul>
+            <div class="user-actions">
+                <span class="user-name">{{ user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn"><span class="icon">⏻</span> Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="upload-container">
+        <div class="upload-header">
+            <h2>Upload by Image</h2>
+            <p>Capture or select a single image for disease segmentation analysis</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="success-message" style="background-color: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form id="upload-form" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" id="latitude" name="latitude" value="Unknown">
+            <input type="hidden" id="longitude" name="longitude" value="Unknown">
+            
+            <div class="upload-dropzone" onclick="document.getElementById('file-upload').click();">
+                <div class="upload-icon">📷</div>
+                <h3>Drag & drop or click to browse</h3>
+                <p>Accepts JPG, PNG (Max 10MB)</p>
+                <input id="file-upload" type="file" name="leaf_image" accept="image/*" style="display: none;">
+            </div>
+        </form>
+    </main>
+
+    <footer class="site-footer" style="margin-top: auto;">
+        <div class="footer-bottom" style="border-top: none; padding-top: 0; margin-bottom: 0;">
+            <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
+        </div>
+    </footer>
+
+    <script>
+        const fileInput = document.getElementById('file-upload');
+        const form = document.getElementById('upload-form');
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            document.getElementById('latitude').value = position.coords.latitude;
+                            document.getElementById('longitude').value = position.coords.longitude;
+                            form.submit();
+                        },
+                        function(error) {
+                            alert("Location access denied. Uploading without GPS tags.");
+                            form.submit();
+                        },
+                        { enableHighAccuracy: true, timeout: 5000 }
+                    );
+                } else {
+                    form.submit();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

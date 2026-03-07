@@ -15,17 +15,28 @@
             </div>
             
             <ul class="nav-links">
-                <li><a href="{{ url_for('dashboard') }}" class="active">Home</a></li>
-                <li><a href="{{ url_for('upload') }}">Upload</a></li>
+                <li><a href="{{ url_for('root') }}" class="active">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('upload_image') }}">Upload by Image</a>
+                        <a href="{{ url_for('upload_folder') }}">Upload by Folder</a>
+                    </div>
+                </li>
                 <li><a href="#">Results</a></li>
                 <li><a href="#">Disease Map</a></li>
             </ul>
 
             <div class="user-actions">
-                <span class="user-email">{{ user_email }}</span>
-                <a href="{{ url_for('logout') }}" class="logout-btn">
-                    <span class="icon">⏻</span> Logout
-                </a>
+                {% if user_name %}
+                    <span class="user-name">{{ user_name }}</span>
+                    <a href="{{ url_for('logout') }}" class="logout-btn">
+                        <span class="icon">⏻</span> Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-login-nav">Login</a>
+                    <a href="{{ url_for('signup') }}" class="btn-signup-nav">Sign Up</a>
+                {% endif %}
             </div>
         </nav>
     </header>
@@ -42,8 +53,8 @@
                 </p>
 
                 <div class="cta-buttons">
-                    <a href="{{ url_for('upload') }}" class="btn btn-primary cursor-pointer" style="text-decoration: none;">
-                        <span class=/span> Upload Image
+                    <a href="{{ url_for('upload_menu') }}" class="btn btn-primary cursor-pointer" style="text-decoration: none;">
+                        <span class="icon">📷</span> Upload Image
                     </a>
                     
                     <button class="btn btn-secondary">
@@ -69,22 +80,10 @@
 
         <section class="stats-section">
             <div class="stats-container">
-                <div class="stat-item">
-                    <h3>95%+</h3>
-                    <p>Accuracy Rate</p>
-                </div>
-                <div class="stat-item">
-                    <h3>0.3s</h3>
-                    <p>Processing Speed</p>
-                </div>
-                <div class="stat-item">
-                    <h3>12+</h3>
-                    <p>Disease Types Detected</p>
-                </div>
-                <div class="stat-item">
-                    <h3>Real-time</h3>
-                    <p>GPS Mapping</p>
-                </div>
+                <div class="stat-item"><h3>95%+</h3><p>Accuracy Rate</p></div>
+                <div class="stat-item"><h3>0.3s</h3><p>Processing Speed</p></div>
+                <div class="stat-item"><h3>12+</h3><p>Disease Types Detected</p></div>
+                <div class="stat-item"><h3>Real-time</h3><p>GPS Mapping</p></div>
             </div>
         </section>
 
@@ -118,8 +117,8 @@
         <section class="cta-section">
             <h2>Ready to Segment Crop Diseases?</h2>
             <p>Start analyzing your crop images now and contribute to our disease mapping database</p>
-            <a href="{{ url_for('upload') }}" class="btn btn-upload-large" style="text-decoration: none;">
-                <span class=/span> Upload Your First Image
+            <a href="{{ url_for('upload_menu') }}" class="btn btn-upload-large" style="text-decoration: none;">
+                <span class="icon">☁️</span> Upload Your First Image
             </a>
         </section>
     </main>
@@ -144,7 +143,7 @@
             <div class="footer-col">
                 <h3>Navigation</h3>
                 <ul class="footer-nav">
-                    <li><a href="{{ url_for('upload') }}">Upload Image</a></li>
+                    <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
                     <li><a href="#">Disease Map</a></li>
                     <li><a href="#">View Results</a></li>
                 </ul>
@@ -168,7 +167,7 @@
                 <a href="https://www.linkedin.com/in/yong-shen-tong-abbb4032b/">LinkedIn</a>
                 <a href="mailto:tygsh504@gmail.com">Email</a>
             </div>
-            <p class="copyright">© 2025 Crop Disease Segmentation Project</p>
+            <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
         </div>
     </footer>
 </body>
