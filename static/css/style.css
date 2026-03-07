@@ -8,7 +8,7 @@
 
 /* --- LOGIN PAGE STYLES --- */
 .login-body {
-    background-color: #f9fafb; /* Light, clean background */
+    background-color: #f9fafb;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -176,14 +176,12 @@
     font-size: 0.9rem;
 }
 
-
 /* --- DASHBOARD (INDEX) PAGE STYLES --- */
 .dashboard-body {
     background-color: #000;
     color: white;
 }
 
-/* Navbar */
 .navbar {
     position: absolute;
     top: 0;
@@ -192,7 +190,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 50px;
-    background: rgba(0, 0, 0, 0.4); /* Transparent glass effect */
+    background: rgba(0, 0, 0, 0.4); 
     z-index: 10;
 }
 
@@ -287,7 +285,7 @@
     margin-bottom: 24px;
 }
 
-.accent-text { color: #86efac; } /* Light green from image */
+.accent-text { color: #86efac; } 
 
 .description {
     font-size: 1.2rem;
@@ -355,11 +353,7 @@
     60% { transform: translateY(-5px); }
 }
 
-/* ========================================================= */
-/* --- NEW SCROLLABLE SECTIONS (Dashboard Landing Page) ---  */
-/* ========================================================= */
-
-/* --- 1. About / Project Section --- */
+/* --- About / Project Section --- */
 .about-section {
     background-color: white;
     color: #111827;
@@ -394,7 +388,6 @@
     color: #111827;
 }
 
-/* Recreates the elegant italic styling from the video */
 .serif-italic {
     font-family: Georgia, serif;
     font-style: italic;
@@ -417,7 +410,7 @@
     color: #111827;
 }
 
-/* --- 2. Statistics Section --- */
+/* --- Statistics Section --- */
 .stats-section {
     background-color: #f9fafb;
     padding: 70px 50px;
@@ -437,7 +430,7 @@
 
 .stat-item h3 {
     font-size: 3.5rem;
-    color: #1b332a; /* Dark Green */
+    color: #1b332a;
     margin-bottom: 8px;
     font-weight: 700;
 }
@@ -448,7 +441,7 @@
     font-weight: 600;
 }
 
-/* --- 3. Key Features Section --- */
+/* --- Key Features Section --- */
 .features-section {
     background-color: white;
     padding: 100px 50px;
@@ -486,8 +479,8 @@
 }
 
 .feature-icon {
-    background: #e6f4ea; /* Light Green */
-    color: #1b332a; /* Dark Green */
+    background: #e6f4ea; 
+    color: #1b332a; 
     width: 60px;
     height: 60px;
     border-radius: 50%;
@@ -509,9 +502,9 @@
     font-size: 1.05rem;
 }
 
-/* --- 4. CTA (Call To Action) Section --- */
+/* --- CTA Section --- */
 .cta-section {
-    background-color: #3b6952; /* Matching the video's green */
+    background-color: #3b6952; 
     color: white;
     text-align: center;
     padding: 90px 20px;
@@ -548,9 +541,9 @@
     transform: scale(1.02);
 }
 
-/* --- 5. Footer Section --- */
+/* --- Footer Section --- */
 .site-footer {
-    background-color: #1b332a; /* Dark forest green */
+    background-color: #1b332a; 
     color: white;
     padding: 70px 50px 30px;
 }
@@ -576,7 +569,7 @@
 .footer-col h4 {
     font-size: 1.1rem;
     margin-bottom: 12px;
-    color: #86efac; /* Mint green accent */
+    color: #86efac; 
     font-weight: 600;
 }
 
@@ -639,3 +632,106 @@
 .footer-links a:hover, .footer-legal a:hover {
     color: white;
 }
+
+/* ========================================================= */
+/* --- NEW UPLOAD PAGE STYLES ---  */
+/* ========================================================= */
+
+.upload-page-body {
+    background-color: #ffffff;
+    color: #111827;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Solid Navbar for pages without a hero image background */
+.navbar-solid {
+    background-color: white;
+    position: relative; 
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.navbar-solid .logo strong { color: #111827; }
+.navbar-solid .logo { background: #f3f4f6; }
+.navbar-solid .nav-links a { color: #4b5563; }
+.navbar-solid .nav-links a:hover, .navbar-solid .nav-links a.active { 
+    color: #1b332a; 
+    text-shadow: none; 
+    font-weight: 600; 
+}
+.navbar-solid .user-email { color: #4b5563; font-weight: 500;}
+
+/* Main Container */
+.upload-container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 0 20px;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.upload-header {
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.upload-header h2 { font-size: 2rem; color: #111827; }
+.upload-header p { color: #6b7280; font-size: 1rem; margin-top: 5px; }
+
+/* The Dashed Box */
+.upload-dropzone {
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-dropzone:hover {
+    border-color: #1b332a;
+    background: #f0fdf4;
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+    color: #9ca3af;
+    margin-bottom: 15px;
+}
+
+.upload-dropzone h3 {
+    font-size: 1.2rem;
+    color: #111827;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.upload-dropzone p {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* History Section */
+.upload-history { margin-top: 50px; }
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.history-header h3 { font-size: 1.2rem; font-weight: 600;}
+.history-header span { color: #6b7280; font-size: 0.9rem; }
+
+.empty-history {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px 0;
+}
+
+.empty-history .icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.5;}

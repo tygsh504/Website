@@ -16,7 +16,7 @@
             
             <ul class="nav-links">
                 <li><a href="{{ url_for('dashboard') }}" class="active">Home</a></li>
-                <li><a href="#">Upload</a></li>
+                <li><a href="{{ url_for('upload') }}">Upload</a></li>
                 <li><a href="#">Results</a></li>
                 <li><a href="#">Disease Map</a></li>
             </ul>
@@ -42,12 +42,9 @@
                 </p>
 
                 <div class="cta-buttons">
-                    <form action="{{ url_for('upload_leaf') }}" method="POST" enctype="multipart/form-data" class="upload-form">
-                        <label for="file-upload" class="btn btn-primary cursor-pointer">
-                            <span class=/span> Upload Image
-                        </label>
-                        <input id="file-upload" type="file" name="leaf_image" accept="image/*" style="display: none;">
-                    </form>
+                    <a href="{{ url_for('upload') }}" class="btn btn-primary cursor-pointer" style="text-decoration: none;">
+                        <span class=/span> Upload Image
+                    </a>
                     
                     <button class="btn btn-secondary">
                         <span class="icon">▶</span> View Demo
@@ -121,9 +118,9 @@
         <section class="cta-section">
             <h2>Ready to Segment Crop Diseases?</h2>
             <p>Start analyzing your crop images now and contribute to our disease mapping database</p>
-            <button class="btn btn-upload-large">
+            <a href="{{ url_for('upload') }}" class="btn btn-upload-large" style="text-decoration: none;">
                 <span class=/span> Upload Your First Image
-            </button>
+            </a>
         </section>
     </main>
 
@@ -147,7 +144,7 @@
             <div class="footer-col">
                 <h3>Navigation</h3>
                 <ul class="footer-nav">
-                    <li><a href="#">Upload Image</a></li>
+                    <li><a href="{{ url_for('upload') }}">Upload Image</a></li>
                     <li><a href="#">Disease Map</a></li>
                     <li><a href="#">View Results</a></li>
                 </ul>
@@ -172,10 +169,6 @@
                 <a href="mailto:tygsh504@gmail.com">Email</a>
             </div>
             <p class="copyright">© 2025 Crop Disease Segmentation Project</p>
-            <!-- <div class="footer-legal">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Use</a> -->
-            </div>
         </div>
     </footer>
 </body>
