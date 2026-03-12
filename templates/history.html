@@ -9,7 +9,23 @@
     <header>
         <nav class="navbar navbar-solid">
             <div class="logo"><span class="logo-icon">🌿</span> <strong>CropGuard AI</strong></div>
-            <div class="user-actions"><span class="user-name">{{ user_name }}</span><a href="{{ url_for('logout') }}" class="logout-btn">Logout</a></div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('root') }}">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn active">Upload ▾</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('upload_image') }}">Upload by Image</a>
+                        <a href="{{ url_for('upload_folder') }}">Upload by Folder</a>
+                        <a href="{{ url_for('history') }}">Upload History</a>
+                    </div>
+                </li>
+                <li><a href="#">Results</a></li>
+                <li><a href="#">Disease Map</a></li>
+            </ul>
+            <div class="user-actions">
+                <span class="user-name">{{ user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn"><span class="icon">⏻</span> Logout</a>
+            </div>
         </nav>
     </header>
 
