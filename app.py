@@ -29,26 +29,21 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- Google Drive Configuration (OAuth 2.0) ---
-# We use 'drive.file' to only access files created by this app for better security
 SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata.readonly']
 DATABASE_FOLDER_ID = '1fHZKA6JMf1cJyxWM8dGEEBAPmxyQiDJY' 
 
 def get_drive_service():
     creds = None
-    # The file token.json stores the user's access and refresh tokens
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     
-    # If there are no (valid) credentials available, let the user log in
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            # Load the credentials.json you downloaded from Google Cloud
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         
-        # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
 
@@ -86,7 +81,6 @@ def login():
                 user_metadata = auth_response.user.user_metadata
                 session['user_name'] = user_metadata.get('full_name') if user_metadata else email.split('@')[0]
                 
-                # Setup Google Drive environment for the user
                 user_folder_name = email.split('@')[0]
                 session['user_folder_id'] = get_or_create_folder(user_folder_name, DATABASE_FOLDER_ID)
                 
@@ -138,50 +132,35 @@ def upload_image():
         return redirect(url_for('login'))
     
     if request.method == 'POST':
-        file = request.files.get('leaf_image')
-        if file and file.filename != '':
-            service = get_drive_service()
+        service = get_drive_service()
+        latitude = request.form.get('latitude', 'Unknown')
+        longitude = request.form.get('longitude', 'Unknown')
+        files = request.files.getlist('leaf_files')
+        
+        if files and len(files) > 0 and files[0].filename != '':
             today = datetime.now().strftime('%Y-%m-%d')
             date_folder_id = get_or_create_folder(today, session['user_folder_id'])
             
-            file_metadata = {'name': file.filename, 'parents': [date_folder_id]}
-            media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
+            uploaded_count = 0
+            for file in files:
+                if file.filename and file.mimetype.startswith('image/'):
+                    # Save location in the file description
+                    file_metadata = {
+                        'name': file.filename,
+                        'parents': [date_folder_id],
+                        'description': f"Lat: {latitude}, Long: {longitude}"
+                    }
+                    media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
+                    service.files().create(body=file_metadata, media_body=media).execute()
+                    uploaded_count += 1
             
-            # Since we are using OAuth 2.0 (acting as you), 
-            # we no longer need 'supportsAllDrives=True'
-            service.files().create(
-                body=file_metadata, 
-                media_body=media, 
-                fields='id'
-            ).execute()
-            
-            flash(f"Successfully uploaded {file.filename}.")
+            if uploaded_count > 0:
+                flash(f"Successfully uploaded {uploaded_count} images to your Drive.")
+            else:
+                flash("No valid images were uploaded.")
             return redirect(url_for('upload_image'))
             
     return render_template('upload_image.html', user_name=session.get('user_name'))
-
-@app.route('/upload/folder', methods=['GET', 'POST'])
-def upload_folder():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        files = request.files.getlist('leaf_folder')
-        if files and len(files) > 0 and files[0].filename != '':
-            service = get_drive_service()
-            today = datetime.now().strftime('%Y-%m-%d')
-            date_folder_id = get_or_create_folder(today, session['user_folder_id'])
-            
-            for file in files:
-                if file.filename:
-                    file_metadata = {'name': file.filename, 'parents': [date_folder_id]}
-                    media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
-                    service.files().create(body=file_metadata, media_body=media).execute()
-            
-            flash(f"Successfully uploaded {len(files)} images to your Drive.")
-            return redirect(url_for('upload_folder'))
-            
-    return render_template('upload_folder.html', user_name=session.get('user_name'))
 
 @app.route('/history')
 def history():
@@ -195,7 +174,7 @@ def history():
     history_data = []
     for folder in folders:
         file_query = f"'{folder['id']}' in parents and trashed = false"
-        files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink)").execute().get('files', [])
+        files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
         if files:
             history_data.append({'date': folder['name'], 'files': files})
     

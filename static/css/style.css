@@ -91,7 +91,6 @@
 
 .navbar .logo { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 30px; }
 
-/* Perfectly centered navigation */
 .nav-links {
     display: flex;
     list-style: none;
@@ -111,14 +110,20 @@
 .logout-btn { background-color: #ef4444; color: white; text-decoration: none; padding: 8px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: background 0.2s; }
 .logout-btn:hover { background-color: #dc2626; }
 
-/* --- DYNAMIC AUTH & DROPDOWN MENU --- */
+/* Dynamic Auth & Navbar-solid styles */
+.navbar-solid { background-color: white; position: relative; border-bottom: 1px solid #e5e7eb; z-index: 10; }
+.navbar-solid .logo strong { color: #111827; }
+.navbar-solid .logo { background: #f3f4f6; }
+.navbar-solid .nav-links a { color: #4b5563; }
+.navbar-solid .nav-links a:hover, .navbar-solid .nav-links a.active { color: #1b332a; text-shadow: none; font-weight: 600; }
+.navbar-solid .user-name { color: #4b5563; font-weight: 500;}
+
 .btn-login-nav { color: white; text-decoration: none; font-weight: 500; margin-right: 15px; font-size: 0.95rem; transition: opacity 0.2s; }
 .btn-login-nav:hover { opacity: 0.8; }
+.navbar-solid .btn-login-nav { color: #111827; }
 
 .btn-signup-nav { background-color: #86efac; color: #111827; text-decoration: none; padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; transition: background 0.2s; }
 .btn-signup-nav:hover { background-color: #4ade80; }
-
-.navbar-solid .btn-login-nav { color: #111827; }
 .navbar-solid .btn-signup-nav { background-color: #1b332a; color: white; }
 .navbar-solid .btn-signup-nav:hover { background-color: #13251e; }
 
@@ -147,7 +152,7 @@
 .dropdown-content a:hover { background-color: #f3f4f6; color: #1b332a !important; }
 .dropdown:hover .dropdown-content { display: block; }
 
-/* --- SECTIONS (Dashboard Landing Page) ---  */
+/* --- DASHBOARD SECTIONS --- */
 .hero-section { position: relative; height: 100vh; width: 100%; background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('../images/field_bg.jpeg') no-repeat center center/cover; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px; }
 .hero-content { max-width: 900px; margin-top: 50px; }
 .main-title { font-size: 4rem; font-weight: 700; margin-bottom: 10px; line-height: 1.1; }
@@ -211,18 +216,12 @@
 
 /* --- UPLOAD PAGES STYLES ---  */
 .upload-page-body { background-color: #ffffff; color: #111827; min-height: 100vh; display: flex; flex-direction: column; }
-.navbar-solid { background-color: white; position: relative; border-bottom: 1px solid #e5e7eb; }
-.navbar-solid .logo strong { color: #111827; }
-.navbar-solid .logo { background: #f3f4f6; }
-.navbar-solid .nav-links a { color: #4b5563; }
-.navbar-solid .nav-links a:hover, .navbar-solid .nav-links a.active { color: #1b332a; text-shadow: none; font-weight: 600; }
-.navbar-solid .user-name { color: #4b5563; font-weight: 500;}
-
 .upload-container { max-width: 800px; margin: 60px auto; padding: 0 20px; flex-grow: 1; width: 100%; }
 .upload-header { text-align: left; margin-bottom: 30px; }
 .upload-header h2 { font-size: 2rem; color: #111827; }
 .upload-header p { color: #6b7280; font-size: 1rem; margin-top: 5px; }
 
+/* Upload Menu Card Styles */
 .upload-options-wrapper { display: flex; gap: 40px; justify-content: center; margin-top: 20px; }
 .upload-card { background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 50px 30px; text-align: center; flex: 1; max-width: 400px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; color: #111827; display: flex; flex-direction: column; align-items: center; }
 .upload-card:hover { border-color: #1b332a; transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.06); background: #ffffff; }
@@ -230,133 +229,7 @@
 .upload-card h3 { font-size: 1.5rem; margin-bottom: 12px; font-weight: 700; }
 .upload-card p { font-size: 1rem; color: #6b7280; line-height: 1.6; }
 
-.upload-dropzone { background: #f9fafb; border: 2px dashed #d1d5db; border-radius: 12px; padding: 60px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
-.upload-dropzone:hover { border-color: #1b332a; background: #f0fdf4; }
-.upload-icon { font-size: 2.5rem; color: #9ca3af; margin-bottom: 15px; }
-.upload-dropzone h3 { font-size: 1.2rem; color: #111827; margin-bottom: 5px; font-weight: 600; }
-.upload-dropzone p { color: #6b7280; font-size: 0.9rem; }
-
-.upload-history { margin-top: 50px; }
-.history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px; }
-.history-header h3 { font-size: 1.2rem; font-weight: 600;}
-.history-header span { color: #6b7280; font-size: 0.9rem; }
-.empty-history { text-align: center; color: #9ca3af; padding: 40px 0; }
-.empty-history .icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.5;}
-
-/* ========================================================= */
-/* --- RESPONSIVE DESIGN (MOBILE & TABLET) --- */
-/* ========================================================= */
-
-@media screen and (max-width: 768px) {
-    /* 1. Fix the Navigation Bar */
-    .navbar {
-        flex-direction: column;
-        padding: 15px;
-        gap: 15px;
-    }
-    
-    .nav-links {
-        position: relative;
-        left: 0;
-        transform: none;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 15px;
-        width: 100%;
-    }
-    
-    .user-actions {
-        width: 100%;
-        justify-content: center;
-    }
-
-    /* 2. Shrink Giant Hero Text */
-    .main-title { font-size: 2.5rem; }
-    .sub-title { font-size: 1.8rem; }
-    .description { font-size: 1rem; padding: 0 10px; }
-    
-    .cta-buttons {
-        flex-direction: column;
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto;
-    }
-    
-    .btn { width: 100%; justify-content: center; }
-
-    /* 3. Stack the Side-by-Side Sections */
-    .about-container,
-    .features-container,
-    .upload-options-wrapper,
-    .footer-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 40px;
-    }
-
-    /* Adjust padding for mobile screens */
-    .about-section, .stats-section, .features-section, .cta-section, .site-footer {
-        padding: 60px 20px;
-    }
-
-    .about-title h2 { font-size: 2.8rem; text-align: center; }
-    .about-text { text-align: center; }
-    .section-label { text-align: center; }
-
-    /* 4. Fix Statistics & Cards */
-    .stats-container { 
-        flex-direction: column; 
-        gap: 40px; 
-    }
-    
-    .feature-card, .upload-card {
-        width: 100%;
-        max-width: 100%;
-    }
-
-    /* 5. Center the Footer Links */
-    .footer-col {
-        width: 100%;
-        text-align: center;
-    }
-    
-    .footer-bottom {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
-    }
-    
-    .footer-links a, .footer-legal a {
-        display: inline-block;
-        margin: 5px 10px;
-    }
-
-    /* 6. Fix Dropdown Menu for Mobile */
-    .dropdown-content {
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-    }
-}
-
-/* ... [Keep all previous Global and Login styles] ... */
-
-/* Perfectly centered navigation */
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 30px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-/* Dropdown Bridge Fix */
-.dropdown { position: relative; padding-bottom: 20px; margin-bottom: -20px; }
-.dropdown-content { display: none; position: absolute; top: 100%; left: -20px; background: white; min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 8px; z-index: 100; }
-.dropdown:hover .dropdown-content { display: block; }
-
-/* History Styling */
+/* History View & Table Styles */
 .history-date-group { margin-bottom: 40px; }
 .date-divider { background: #f3f4f6; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; color: #1b332a; font-weight: 600; }
 .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
@@ -367,15 +240,215 @@
 .history-item a { font-size: 0.8rem; color: #1b332a; font-weight: 600; }
 
 /* ========================================================= */
-/* --- RESPONSIVE DESIGN (MOBILE & TABLET) --- */
+/* --- NEW UNIFIED UPLOAD PREVIEW & TABLE STYLES --- */
 /* ========================================================= */
-@media screen and (max-width: 768px) {
-    .navbar { flex-direction: column; padding: 15px; gap: 15px; }
-    .nav-links { position: relative; left: 0; transform: none; flex-wrap: wrap; justify-content: center; width: 100%; }
-    .main-title { font-size: 2.5rem; }
-    .sub-title { font-size: 1.8rem; }
-    .about-container, .features-container, .upload-options-wrapper, .footer-container {
-        flex-direction: column; align-items: center; gap: 30px;
-    }
-    .upload-card { width: 100%; max-width: 100%; }
+
+/* Light Green Dropzone Box */
+.upload-dropzone-light {
+    background-color: #f0fdf4; /* Very light green */
+    border: 2px dashed #86efac; /* Medium-light green border */
+    border-radius: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin-bottom: 30px;
+}
+.upload-dropzone-light:hover, .upload-dropzone-light.highlight {
+    background-color: #dcfce7;
+    border-color: #4ade80;
+}
+.upload-dropzone-light .icon-cloud {
+    font-size: 3.5rem;
+    color: #22c55e;
+    margin-bottom: 15px;
+}
+.upload-dropzone-light h3 {
+    color: #166534;
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+.upload-dropzone-light p {
+    color: #15803d;
+    font-size: 0.95rem;
+}
+
+/* Pre-Upload Table Action Group */
+.btn-action-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 0 5px;
+}
+
+/* Pre-Upload Action Buttons */
+.btn-theme-delete {
+    background: white;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+.btn-theme-delete:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #ef4444;
+}
+.btn-theme-delete:disabled {
+    border-color: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    background: #f9fafb;
+}
+
+.btn-theme-upload {
+    background: #1b332a;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 30px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(27, 51, 42, 0.15);
+}
+.btn-theme-upload:hover {
+    background: #13251e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(27, 51, 42, 0.2);
+}
+.btn-theme-upload:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Pre-Upload Table */
+.preupload-table-wrapper {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.preupload-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+.preupload-table th, .preupload-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    font-size: 0.95rem;
+    color: #4b5563;
+}
+.preupload-table th {
+    background: #f9fafb;
+    color: #374151;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+.preupload-table tr:last-child td {
+    border-bottom: none;
+}
+.preupload-table tr:hover td {
+    background-color: #fcfdfc;
+}
+
+/* 40px Half-size Image Cell */
+.preupload-img-cell img {
+    width: 40px; 
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    display: block;
+}
+
+/* Truncate long file names */
+.filename-cell {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    color: #111827;
+}
+
+/* Individual Row Delete Icon */
+.row-delete-icon {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.row-delete-icon:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* Customized checkboxes */
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #22c55e;
+    cursor: pointer;
+}
+
+/* Container for the new Dropzone Buttons */
+.dropzone-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Secondary Buttons inside the Dropzone */
+.btn-theme-secondary {
+    background: white;
+    color: #166534;
+    border: 1px solid #4ade80;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.1);
+}
+
+.btn-theme-secondary:hover {
+    background: #dcfce7;
+    border-color: #22c55e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(34, 197, 94, 0.15);
 }

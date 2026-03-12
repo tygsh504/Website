@@ -15,9 +15,8 @@
                 <li class="dropdown">
                     <a href="{{ url_for('upload_menu') }}" class="dropbtn active">Upload ▾</a>
                     <div class="dropdown-content">
-                        <a href="{{ url_for('upload_image') }}">Upload by Image</a>
-                        <a href="{{ url_for('upload_folder') }}">Upload by Folder</a>
-                        <a href="{{ url_for('history') }}">Upload History</a>
+                        <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('history') }}">History</a>
                     </div>
                 </li>
                 <li><a href="#">Results</a></li>
@@ -32,8 +31,8 @@
 
     <main class="upload-container">
         <div class="upload-header">
-            <h2>Upload by Image</h2>
-            <p>Capture or select a single image for disease segmentation analysis</p>
+            <h2>Upload Crop Images</h2>
+            <p>Select images to review, manage, and upload to your secure database.</p>
         </div>
 
         {% with messages = get_flashed_messages() %}
@@ -44,48 +43,257 @@
           {% endif %}
         {% endwith %}
 
-        <form id="upload-form" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data">
-            <input type="hidden" id="latitude" name="latitude" value="Unknown">
-            <input type="hidden" id="longitude" name="longitude" value="Unknown">
+        <div class="upload-dropzone-light" id="dropzone">
+            <div class="icon-cloud">☁️</div>
+            <h3>Choose an option</h3>
+            <p>Supports individual images or entire folders (JPG, PNG)</p>
             
-            <div class="upload-dropzone" onclick="document.getElementById('file-upload').click();">
-                <div class="upload-icon">📷</div>
-                <h3>Drag & drop or click to browse</h3>
-                <p>Accepts JPG, PNG (Max 10MB)</p>
-                <input id="file-upload" type="file" name="leaf_image" accept="image/*" style="display: none;">
+            <div class="dropzone-buttons">
+                <button type="button" class="btn-theme-secondary" onclick="document.getElementById('file-input').click()">📄 Select Images</button>
+                <button type="button" class="btn-theme-secondary" onclick="document.getElementById('folder-input').click()">📁 Select Folder</button>
             </div>
-        </form>
+        </div>
+
+        <input type="file" id="file-input" multiple accept="image/*" style="display: none;" onchange="handleFiles(this.files)">
+        <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;" onchange="handleFiles(this.files)">
+        
+        <div id="preupload-section" style="display: none;">
+            <div class="btn-action-group">
+                <h3 style="font-size: 1.1rem; color: #374151;">Selected Images</h3>
+                <button type="button" id="bulk-delete-btn" class="btn-theme-delete" disabled onclick="deleteSelected()">
+                    🗑️ Delete Selected (<span id="selected-count">0</span>)
+                </button>
+            </div>
+
+            <div class="preupload-table-wrapper">
+                <table class="preupload-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">
+                                <input type="checkbox" id="selectAllCb" onchange="toggleSelectAll()">
+                            </th>
+                            <th style="width: 70px;">Image</th>
+                            <th>File Name</th>
+                            <th>Size</th>
+                            <th style="width: 80px; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-tbody">
+                        </tbody>
+                </table>
+            </div>
+
+            <form id="upload-form" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data" style="text-align: right; margin-top: 20px;">
+                <input type="hidden" id="latitude" name="latitude" value="Unknown">
+                <input type="hidden" id="longitude" name="longitude" value="Unknown">
+                <input type="file" id="final-files" name="leaf_files" multiple style="display: none;">
+                
+                <button type="submit" id="submit-btn" class="btn-theme-upload">
+                    <span class="icon">☁️</span> Upload to Drive
+                </button>
+            </form>
+        </div>
     </main>
 
-    <footer class="site-footer" style="margin-top: auto;">
-        <div class="footer-bottom" style="border-top: none; padding-top: 0; margin-bottom: 0;">
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Contact Us</h3>
+                <div class="contact-person">
+                    <h4>Tong Yong Shen</h4>
+                    <p>📞 +60 11 2048 5425</p>
+                    <p>📩 tygsh504@gmail.com</p>
+                    <p>🎓 2200458@siswa.um.edu.my</p>
+                </div>
+                <div class="contact-person">
+                    <h4>Associate Prof. Ir. Dr. Norrima binti Mokhtar</h4>
+                    <p>📞 +60 10 245 5060</p>
+                    <p>📩 norrimamokhtar@um.edu.my</p>
+                </div>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Navigation</h3>
+                <ul class="footer-nav">
+                    <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
+                    <li><a href="#">Disease Map</a></li>
+                    <li><a href="#">View Results</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Location</h3>
+                <div class="location-info">
+                    <h4>ACRLAB</h4>
+                    <p>Department of Electrical Engineering</p>
+                    <p>Universiti Malaya</p>
+                    <p>50603 Lembah Pantai</p>
+                    <p>Kuala Lumpur, Malaysia</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="https://github.com/tygsh504" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/yong-shen-tong-abbb4032b/">LinkedIn</a>
+                <a href="mailto:tygsh504@gmail.com">Email</a>
+            </div>
             <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
         </div>
     </footer>
 
     <script>
-        const fileInput = document.getElementById('file-upload');
-        const form = document.getElementById('upload-form');
+        let selectedFiles = [];
+        let gpsFetched = false;
         
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files.length > 0) {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            document.getElementById('latitude').value = position.coords.latitude;
-                            document.getElementById('longitude').value = position.coords.longitude;
-                            form.submit();
-                        },
-                        function(error) {
-                            alert("Location access denied. Uploading without GPS tags.");
-                            form.submit();
-                        },
-                        { enableHighAccuracy: true, timeout: 5000 }
-                    );
+        const tbody = document.getElementById('preview-tbody');
+        const finalFilesInput = document.getElementById('final-files');
+        const preuploadSection = document.getElementById('preupload-section');
+        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        const selectAllCb = document.getElementById('selectAllCb');
+        const selectedCountSpan = document.getElementById('selected-count');
+        const uploadForm = document.getElementById('upload-form');
+        const dropzone = document.getElementById('dropzone');
+
+        // Try to fetch GPS in the background as soon as user interacts with files
+        function prefetchGPS() {
+            if (!gpsFetched && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('latitude').value = position.coords.latitude;
+                        document.getElementById('longitude').value = position.coords.longitude;
+                        gpsFetched = true;
+                        console.log("GPS Location acquired.");
+                    },
+                    function(error) {
+                        console.log("GPS Location access denied or unavailable.");
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            }
+        }
+
+        // Drag and Drop Logic
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.add('highlight'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.remove('highlight'), false);
+        });
+
+        dropzone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files), false);
+
+        function handleFiles(files) {
+            prefetchGPS(); // Ask for GPS right away
+            
+            let invalidFiles = [];
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].type.startsWith('image/')) {
+                    if (!selectedFiles.some(f => f.name === files[i].name && f.size === files[i].size)) {
+                        selectedFiles.push(files[i]);
+                    }
                 } else {
-                    form.submit();
+                    invalidFiles.push(files[i].name);
                 }
             }
+            if (invalidFiles.length > 0) alert("Ignored non-image files:\n" + invalidFiles.join(', '));
+            
+            // Reset "Select All" state when new files are added
+            selectAllCb.checked = false;
+            renderTable();
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            selectAllCb.checked = false; 
+            renderTable();
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAllCb.checked);
+            updateBulkDeleteState();
+        }
+
+        function updateBulkDeleteState() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            selectedCountSpan.textContent = checkedCount;
+            bulkDeleteBtn.disabled = checkedCount === 0;
+            
+            if (checkboxes.length > 0) {
+                selectAllCb.checked = checkedCount === checkboxes.length;
+            }
+        }
+
+        function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            // Delete backwards so index shifting doesn't mess up removal
+            for (let i = checkboxes.length - 1; i >= 0; i--) {
+                if (checkboxes[i].checked) {
+                    selectedFiles.splice(i, 1);
+                }
+            }
+            selectAllCb.checked = false;
+            renderTable();
+        }
+
+        function renderTable() {
+            tbody.innerHTML = '';
+            
+            if (selectedFiles.length === 0) {
+                preuploadSection.style.display = 'none';
+            } else {
+                preuploadSection.style.display = 'block';
+                selectedFiles.forEach((file, index) => {
+                    const tr = document.createElement('tr');
+                    
+                    const sizeKB = (file.size / 1024).toFixed(1);
+                    const fileUrl = URL.createObjectURL(file);
+
+                    tr.innerHTML = `
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="row-checkbox" onchange="updateBulkDeleteState()">
+                        </td>
+                        <td class="preupload-img-cell">
+                            <img src="${fileUrl}" alt="Preview">
+                        </td>
+                        <td class="filename-cell" title="${file.name}">${file.name}</td>
+                        <td style="color: #6b7280;">${sizeKB} KB</td>
+                        <td style="text-align: center;">
+                            <button type="button" class="row-delete-icon" onclick="removeFile(${index})" title="Remove">✕</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Sync with hidden file input for submission
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            finalFilesInput.files = dt.files;
+            updateBulkDeleteState();
+        }
+
+        uploadForm.addEventListener('submit', function(e) {
+            if (selectedFiles.length === 0) {
+                e.preventDefault();
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerHTML = '⏳ Uploading...';
+            
+            // Allow form to submit, but disable the button to prevent double clicks
+            setTimeout(() => {
+                submitBtn.disabled = true;
+            }, 10);
         });
     </script>
 </body>

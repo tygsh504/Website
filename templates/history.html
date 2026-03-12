@@ -12,11 +12,10 @@
             <ul class="nav-links">
                 <li><a href="{{ url_for('root') }}">Home</a></li>
                 <li class="dropdown">
-                    <a href="{{ url_for('upload_menu') }}" class="dropbtn active">Upload ▾</a>
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
                     <div class="dropdown-content">
-                        <a href="{{ url_for('upload_image') }}">Upload by Image</a>
-                        <a href="{{ url_for('upload_folder') }}">Upload by Folder</a>
-                        <a href="{{ url_for('history') }}">Upload History</a>
+                        <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('history') }}">History</a>
                     </div>
                 </li>
                 <li><a href="#">Results</a></li>

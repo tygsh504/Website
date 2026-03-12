@@ -19,8 +19,7 @@
                 <li class="dropdown">
                     <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
                     <div class="dropdown-content">
-                        <a href="{{ url_for('upload_image') }}">Upload by Image</a>
-                        <a href="{{ url_for('upload_folder') }}">Upload by Folder</a>
+                        <a href="{{ url_for('upload_image') }}">Upload Image</a>
                         <a href="{{ url_for('history') }}">History</a>
                     </div>
                 </li>
@@ -55,7 +54,7 @@
 
                 <div class="cta-buttons">
                     <a href="{{ url_for('upload_menu') }}" class="btn btn-primary cursor-pointer" style="text-decoration: none;">
-                        <span class="icon">📷</span> Upload Image
+                        Upload Image
                     </a>
                     
                     <button class="btn btn-secondary">
@@ -119,7 +118,7 @@
             <h2>Ready to Segment Crop Diseases?</h2>
             <p>Start analyzing your crop images now and contribute to our disease mapping database</p>
             <a href="{{ url_for('upload_menu') }}" class="btn btn-upload-large" style="text-decoration: none;">
-                <span class="icon">☁️</span> Upload Your First Image
+                Upload Your First Image
             </a>
         </section>
     </main>
