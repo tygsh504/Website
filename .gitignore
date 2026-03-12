@@ -1,4 +1,9 @@
-/venv
-/Website.code-workspace
+__pycache__/
+*.pyc
+venv/
+.env
+token.json
+credentials.json
+client_secret_*.json
 /Video
-/service_account.json
+service_account.json

@@ -1,52 +1,70 @@
 import io
 import os
+import os.path 
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from dotenv import load_dotenv
 from supabase import create_client
-from google.oauth2 import service_account
+
+# Google API Libraries
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "cropguard_super_secret_key"
 
 # --- Supabase Configuration ---
-SUPABASE_URL = "https://jcdjuqikvspvxdmfixit.supabase.co"
-# Note: Ensure this is your 'anon' public key from the Supabase dashboard
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjZGp1cWlrdnNwdnhkbWZpeGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNTY1NzEsImV4cCI6MjA4NzkzMjU3MX0.ki4bFOQgXcu9jRnOoG861QNcqmMyNRMtVK3wRVrV7Lk"
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("Supabase URL and Key must be set in environment variables.")
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# --- Google Drive Configuration ---
-SCOPES = ['https://www.googleapis.com/auth/drive']
-SERVICE_ACCOUNT_FILE = 'service_account.json'
-# Your specific Website Database Folder ID
+# --- Google Drive Configuration (OAuth 2.0) ---
+# We use 'drive.file' to only access files created by this app for better security
+SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata.readonly']
 DATABASE_FOLDER_ID = '1fHZKA6JMf1cJyxWM8dGEEBAPmxyQiDJY' 
 
 def get_drive_service():
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    creds = None
+    # The file token.json stores the user's access and refresh tokens
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    
+    # If there are no (valid) credentials available, let the user log in
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            # Load the credentials.json you downloaded from Google Cloud
+            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
     return build('drive', 'v3', credentials=creds)
 
 def get_or_create_folder(name, parent_id):
     service = get_drive_service()
-    # Added supportsAllDrives and includeItemsFromAllDrives to handle personal drive quota correctly
     query = f"name = '{name}' and '{parent_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-    results = service.files().list(
-        q=query, 
-        fields="files(id)",
-        supportsAllDrives=True,
-        includeItemsFromAllDrives=True
-    ).execute()
+    results = service.files().list(q=query, fields="files(id)").execute()
     
     files = results.get('files', [])
     if files:
         return files[0]['id']
     else:
         file_metadata = {'name': name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [parent_id]}
-        folder = service.files().create(
-            body=file_metadata, 
-            fields='id',
-            supportsAllDrives=True
-        ).execute()
+        folder = service.files().create(body=file_metadata, fields='id').execute()
         return folder.get('id')
 
 # --- Authentication Routes ---
@@ -62,27 +80,19 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         try:
-            # Attempt login via Supabase
             auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            
             if auth_response.user:
                 session['user'] = email
-                # Safely extract user name or fallback to email prefix
                 user_metadata = auth_response.user.user_metadata
                 session['user_name'] = user_metadata.get('full_name') if user_metadata else email.split('@')[0]
                 
-                # Ensure a folder exists for this specific user in Google Drive
+                # Setup Google Drive environment for the user
                 user_folder_name = email.split('@')[0]
                 session['user_folder_id'] = get_or_create_folder(user_folder_name, DATABASE_FOLDER_ID)
                 
                 return redirect(url_for('root'))
         except Exception as e:
-            # Detailed flash message to help debug (e.g., Email not confirmed)
-            error_msg = str(e)
-            if "Email not confirmed" in error_msg:
-                flash("Please confirm your email address before logging in.")
-            else:
-                flash("Invalid email or password. Please try again.")
+            flash("Invalid email or password. Please try again.")
             return redirect(url_for('login'))
     return render_template('login.html')
 
@@ -98,13 +108,11 @@ def signup():
             flash("Passwords do not match.")
             return redirect(url_for('signup'))
         try:
-            # Sign up user with additional metadata
             supabase.auth.sign_up({
-                "email": email, 
-                "password": password,
+                "email": email, "password": password,
                 "options": {"data": {"full_name": full_name}}
             })
-            flash("Account created! Please check your email for a confirmation link.")
+            flash("Account created! You can now log in.")
             return redirect(url_for('login'))
         except Exception as e:
             flash(f"Sign up failed: {str(e)}")
@@ -139,15 +147,15 @@ def upload_image():
             file_metadata = {'name': file.filename, 'parents': [date_folder_id]}
             media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
             
-            # Crucial: supportsAllDrives=True uses the parent folder's quota
+            # Since we are using OAuth 2.0 (acting as you), 
+            # we no longer need 'supportsAllDrives=True'
             service.files().create(
                 body=file_metadata, 
                 media_body=media, 
-                fields='id',
-                supportsAllDrives=True
+                fields='id'
             ).execute()
             
-            flash(f"Successfully uploaded {file.filename}")
+            flash(f"Successfully uploaded {file.filename}.")
             return redirect(url_for('upload_image'))
             
     return render_template('upload_image.html', user_name=session.get('user_name'))
@@ -168,13 +176,9 @@ def upload_folder():
                 if file.filename:
                     file_metadata = {'name': file.filename, 'parents': [date_folder_id]}
                     media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
-                    service.files().create(
-                        body=file_metadata, 
-                        media_body=media,
-                        supportsAllDrives=True
-                    ).execute()
+                    service.files().create(body=file_metadata, media_body=media).execute()
             
-            flash(f"Successfully uploaded {len(files)} images.")
+            flash(f"Successfully uploaded {len(files)} images to your Drive.")
             return redirect(url_for('upload_folder'))
             
     return render_template('upload_folder.html', user_name=session.get('user_name'))
@@ -185,24 +189,13 @@ def history():
         return redirect(url_for('login'))
     
     service = get_drive_service()
-    # List folders with supportsAllDrives
     query = f"'{session['user_folder_id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-    folders = service.files().list(
-        q=query, 
-        fields="files(id, name)",
-        supportsAllDrives=True,
-        includeItemsFromAllDrives=True
-    ).execute().get('files', [])
+    folders = service.files().list(q=query, fields="files(id, name)").execute().get('files', [])
     
     history_data = []
     for folder in folders:
         file_query = f"'{folder['id']}' in parents and trashed = false"
-        files = service.files().list(
-            q=file_query, 
-            fields="files(id, name, thumbnailLink, webViewLink)",
-            supportsAllDrives=True,
-            includeItemsFromAllDrives=True
-        ).execute().get('files', [])
+        files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink)").execute().get('files', [])
         if files:
             history_data.append({'date': folder['name'], 'files': files})
     
