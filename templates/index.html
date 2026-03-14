@@ -171,5 +171,17 @@
             <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
         </div>
     </footer>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            // If scrolled past 50px, add the white background style
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
 </body>
 </html>

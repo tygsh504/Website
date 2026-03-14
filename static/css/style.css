@@ -37,6 +37,11 @@
     margin-bottom: 20px;
 }
 
+/* Fix spacing for the image inside the login header */
+.login-header .logo-wrapper img {
+    display: block;
+}
+
 .login-header h1 {
     font-size: 2rem;
     color: #111827;
@@ -78,18 +83,35 @@
 .dashboard-body { background-color: #000; color: white; }
 
 .navbar {
-    position: absolute;
+    position: fixed; /* Changed from absolute to fixed to follow scrolling */
     top: 0;
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px 50px;
-    background: rgb(0, 0, 0, 0.3); 
-    z-index: 10;
+    background: transparent; /* Cleaned up background */
+    z-index: 1000; /* Increased to ensure it stays above all content */
+    transition: all 0.3s ease; /* Smooth transition for background and padding */
 }
 
-.navbar .logo { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; background: rgba(255, 255, 255, 0.4); padding: 8px 16px; border-radius: 30px; }
+/* Cleaned up the logo: removed the grey background and made it white initially */
+.navbar .logo { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    font-size: 1.2rem; 
+    background: transparent; 
+    color: white;
+    padding: 8px 0; 
+    border-radius: 30px; 
+    transition: color 0.3s ease;
+}
+.navbar .logo img { 
+    display: block; 
+    filter: brightness(0) invert(1); /* Makes the logo completely white */
+    transition: filter 0.3s ease;
+}
 
 .nav-links {
     display: flex;
@@ -100,9 +122,9 @@
     transform: translateX(-50%);
 }
 
-.nav-links a { color: rgb(255, 255, 255); text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: opacity 0.2s; }
+.nav-links a { color: rgb(255, 255, 255); text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
 .nav-links a:hover, .nav-links a.active { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-.nav-links a:not(.active) { opacity: 0.7; }
+.nav-links a:not(.active) { opacity: 0.8; }
 
 .user-actions { display: flex; align-items: center; gap: 20px; }
 .user-name { color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; font-weight: 500; }
@@ -110,10 +132,26 @@
 .logout-btn { background-color: #ef4444; color: white; text-decoration: none; padding: 8px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: background 0.2s; }
 .logout-btn:hover { background-color: #dc2626; }
 
-/* Dynamic Auth & Navbar-solid styles */
-.navbar-solid { background-color: white; position: relative; border-bottom: 1px solid #e5e7eb; z-index: 10; }
-.navbar-solid .logo strong { color: #111827; }
-.navbar-solid .logo { background: #f3f4f6; }
+/* --- NEW SCROLLED STATE (For Index Page) --- */
+.navbar.scrolled {
+    background-color: white;
+    padding: 15px 50px; /* Slightly shrinks the navbar on scroll */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.navbar.scrolled .logo { color: #111827; }
+.navbar.scrolled .logo img { filter: none; } /* Reverts logo to its original green */
+.navbar.scrolled .nav-links a { color: #4b5563; text-shadow: none; }
+.navbar.scrolled .nav-links a:hover, .navbar.scrolled .nav-links a.active { color: #1b332a; font-weight: 600; }
+.navbar.scrolled .user-name { color: #4b5563; }
+.navbar.scrolled .btn-login-nav { color: #111827; }
+.navbar.scrolled .btn-signup-nav { background-color: #1b332a; color: white; }
+.navbar.scrolled .btn-signup-nav:hover { background-color: #13251e; }
+
+/* Dynamic Auth & Navbar-solid styles (For subpages) */
+.navbar-solid { background-color: white; position: relative; border-bottom: 1px solid #e5e7eb; padding: 15px 50px; }
+.navbar-solid .logo { background: transparent; color: #111827; }
+.navbar-solid .logo img { filter: none; }
 .navbar-solid .nav-links a { color: #4b5563; }
 .navbar-solid .nav-links a:hover, .navbar-solid .nav-links a.active { color: #1b332a; text-shadow: none; font-weight: 600; }
 .navbar-solid .user-name { color: #4b5563; font-weight: 500;}
@@ -157,7 +195,7 @@
 .hero-content { max-width: 900px; margin-top: 50px; }
 .main-title { font-size: 4rem; font-weight: 700; margin-bottom: 10px; line-height: 1.1; }
 .sub-title { font-size: 2.8rem; font-weight: 400; margin-bottom: 24px; }
-.accent-text { color: #86efac; } 
+.accent-text { color: #00c749; } 
 .description { font-size: 1.2rem; color: rgba(255, 255, 255, 0.85); margin: 0 auto 40px; max-width: 700px; line-height: 1.6; }
 .cta-buttons { display: flex; justify-content: center; gap: 20px; }
 .btn { padding: 14px 32px; font-size: 1.05rem; font-weight: 600; border-radius: 30px; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; border: none; }
