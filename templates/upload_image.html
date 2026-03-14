@@ -88,8 +88,8 @@
                 <input type="hidden" id="longitude" name="longitude" value="Unknown">
                 <input type="file" id="final-files" name="leaf_files" multiple style="display: none;">
                 
-                <button type="submit" id="submit-btn" class="btn-theme-upload">
-                    Upload to Drive
+                <button type="button" id="submit-btn" class="btn-theme-upload" onclick="confirmUploadAndProcess()">
+                    Upload and Process
                 </button>
             </form>
         </div>
@@ -156,7 +156,6 @@
         const uploadForm = document.getElementById('upload-form');
         const dropzone = document.getElementById('dropzone');
 
-        // Try to fetch GPS in the background as soon as user interacts with files
         function prefetchGPS() {
             if (!gpsFetched && navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -164,7 +163,6 @@
                         document.getElementById('latitude').value = position.coords.latitude;
                         document.getElementById('longitude').value = position.coords.longitude;
                         gpsFetched = true;
-                        console.log("GPS Location acquired.");
                     },
                     function(error) {
                         console.log("GPS Location access denied or unavailable.");
@@ -174,7 +172,6 @@
             }
         }
 
-        // Drag and Drop Logic
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropzone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
         });
@@ -190,8 +187,7 @@
         dropzone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files), false);
 
         function handleFiles(files) {
-            prefetchGPS(); // Ask for GPS right away
-            
+            prefetchGPS(); 
             let invalidFiles = [];
             for (let i = 0; i < files.length; i++) {
                 if (files[i].type.startsWith('image/')) {
@@ -203,8 +199,6 @@
                 }
             }
             if (invalidFiles.length > 0) alert("Ignored non-image files:\n" + invalidFiles.join(', '));
-            
-            // Reset "Select All" state when new files are added
             selectAllCb.checked = false;
             renderTable();
         }
@@ -226,7 +220,6 @@
             const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
             selectedCountSpan.textContent = checkedCount;
             bulkDeleteBtn.disabled = checkedCount === 0;
-            
             if (checkboxes.length > 0) {
                 selectAllCb.checked = checkedCount === checkboxes.length;
             }
@@ -234,7 +227,6 @@
 
         function deleteSelected() {
             const checkboxes = document.querySelectorAll('.row-checkbox');
-            // Delete backwards so index shifting doesn't mess up removal
             for (let i = checkboxes.length - 1; i >= 0; i--) {
                 if (checkboxes[i].checked) {
                     selectedFiles.splice(i, 1);
@@ -246,14 +238,12 @@
 
         function renderTable() {
             tbody.innerHTML = '';
-            
             if (selectedFiles.length === 0) {
                 preuploadSection.style.display = 'none';
             } else {
                 preuploadSection.style.display = 'block';
                 selectedFiles.forEach((file, index) => {
                     const tr = document.createElement('tr');
-                    
                     const sizeKB = (file.size / 1024).toFixed(1);
                     const fileUrl = URL.createObjectURL(file);
 
@@ -274,27 +264,32 @@
                 });
             }
 
-            // Sync with hidden file input for submission
             const dt = new DataTransfer();
             selectedFiles.forEach(file => dt.items.add(file));
             finalFilesInput.files = dt.files;
             updateBulkDeleteState();
         }
 
-        uploadForm.addEventListener('submit', function(e) {
+        // New confirmation function
+        function confirmUploadAndProcess() {
             if (selectedFiles.length === 0) {
-                e.preventDefault();
+                alert("Please select images first.");
                 return;
             }
 
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.innerHTML = '⏳ Uploading...';
+            const proceed = confirm(`You are about to upload and process ${selectedFiles.length} images. Do you want to continue?`);
             
-            // Allow form to submit, but disable the button to prevent double clicks
-            setTimeout(() => {
-                submitBtn.disabled = true;
-            }, 10);
-        });
+            if (proceed) {
+                const submitBtn = document.getElementById('submit-btn');
+                submitBtn.innerHTML = '⏳ Uploading & Processing...';
+                
+                setTimeout(() => {
+                    submitBtn.disabled = true;
+                }, 10);
+                
+                uploadForm.submit();
+            }
+        }
     </script>
 </body>
 </html>

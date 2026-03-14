@@ -39,8 +39,15 @@ def get_drive_service():
     
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"Failed to refresh token: {e}. Re-authenticating...")
+                creds = None
+                if os.path.exists('token.json'):
+                    os.remove('token.json')
+        
+        if not creds or not creds.valid:
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         
@@ -86,7 +93,8 @@ def login():
                 
                 return redirect(url_for('root'))
         except Exception as e:
-            flash("Invalid email or password. Please try again.")
+            print(f"Login error occurred: {e}")
+            flash(f"Login failed: {e}")
             return redirect(url_for('login'))
     return render_template('login.html')
 
