@@ -9,7 +9,7 @@
 <body class="upload-page-body">
     <header>
         <nav class="navbar navbar-solid">
-            <div class="logo"><span class="logo-icon">🌿</span> <strong>CropGuard AI</strong></div>
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" style="height: 30px; width: auto;"> <strong>CropGuard AI</strong></div>
             <ul class="nav-links">
                 <li><a href="{{ url_for('root') }}">Home</a></li>
                 <li class="dropdown">
@@ -89,7 +89,7 @@
                 <input type="file" id="final-files" name="leaf_files" multiple style="display: none;">
                 
                 <button type="submit" id="submit-btn" class="btn-theme-upload">
-                    <span class="icon">☁️</span> Upload to Drive
+                    Upload to Drive
                 </button>
             </form>
         </div>
