@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>History - CropGuard AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="upload-page-body">
     <header>
@@ -15,10 +16,10 @@
                     <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
                     <div class="dropdown-content">
                         <a href="{{ url_for('upload_image') }}">Upload Image</a>
-                        <a href="{{ url_for('history') }}">History</a>
+                        <a href="{{ url_for('history') }}" class="active">History</a>
                     </div>
                 </li>
-                <li><a href="#">Results</a></li>
+                <li><a href="#">Analysis</a></li>
                 <li><a href="#">Disease Map</a></li>
             </ul>
             <div class="user-actions">
@@ -35,7 +36,14 @@
         </div>
 
         {% if not history_data %}
-            <div class="empty-history"><div class="icon">🏜️</div><p>No history yet.</p></div>
+            <div class="empty-history">
+                <div class="icon">🌿</div>
+                <h3>No history yet</h3>
+                <p>It looks like you haven't analyzed any crop images yet. Upload your first leaf image to start detecting diseases, tracking geographical spread, and building your analysis history.</p>
+                <a href="{{ url_for('upload_image') }}" class="btn-theme-upload" style="text-decoration: none;">
+                    Upload Your First Image
+                </a>
+            </div>
         {% else %}
             {% for entry in history_data %}
                 <div class="history-date-group">
@@ -45,6 +53,7 @@
                             <div class="history-item">
                                 <img src="{{ file.thumbnailLink }}" alt="Scan">
                                 <p>{{ file.name }}</p>
+                                <a href="{{ file.webViewLink }}" target="_blank">View in Drive</a>
                             </div>
                         {% endfor %}
                     </div>
@@ -52,5 +61,53 @@
             {% endfor %}
         {% endif %}
     </main>
+
+    <footer class="site-footer" style="margin-top: auto;">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Contact Us</h3>
+                <div class="contact-person">
+                    <h4>Tong Yong Shen</h4>
+                    <p>📞 +60 11 2048 5425</p>
+                    <p>📩 tygsh504@gmail.com</p>
+                    <p>🎓 2200458@siswa.um.edu.my</p>
+                </div>
+                <div class="contact-person">
+                    <h4>Associate Prof. Ir. Dr. Norrima binti Mokhtar</h4>
+                    <p>📞 +60 10 245 5060</p>
+                    <p>📩 norrimamokhtar@um.edu.my</p>
+                </div>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Navigation</h3>
+                <ul class="footer-nav">
+                    <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
+                    <li><a href="#">Disease Map</a></li>
+                    <li><a href="#">Analysis</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Location</h3>
+                <div class="location-info">
+                    <h4>ACRLAB</h4>
+                    <p>Department of Electrical Engineering</p>
+                    <p>Universiti Malaya</p>
+                    <p>50603 Lembah Pantai</p>
+                    <p>Kuala Lumpur, Malaysia</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="https://github.com/tygsh504" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/yong-shen-tong-abbb4032b/">LinkedIn</a>
+                <a href="mailto:tygsh504@gmail.com">Email</a>
+            </div>
+            <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
+        </div>
+    </footer>
 </body>
 </html>

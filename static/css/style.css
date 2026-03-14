@@ -276,6 +276,39 @@
 .history-item a { font-size: 0.85rem; color: #1b332a; font-weight: 600; text-decoration: none; }
 .history-item a:hover { text-decoration: underline; }
 
+/* Empty History State */
+.empty-history {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    margin-top: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.empty-history .icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.empty-history h3 {
+    font-size: 2.2rem;
+    color: #111827;
+    margin-bottom: 15px;
+    font-weight: 800;
+}
+
+.empty-history p {
+    font-size: 1.1rem;
+    color: #4b5563;
+    margin-bottom: 35px;
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+}
+
 /* ========================================================= */
 /* --- NEW UNIFIED UPLOAD PREVIEW & TABLE STYLES --- */
 /* ========================================================= */
