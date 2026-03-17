@@ -163,7 +163,7 @@ def upload_image():
                     uploaded_count += 1
             
             if uploaded_count > 0:
-                flash(f"Successfully uploaded {uploaded_count} images to your Drive.")
+                flash(f"Successfully uploaded and processed {uploaded_count} images. Please proceed to analysis for results.")
             else:
                 flash("No valid images were uploaded.")
             return redirect(url_for('upload_image'))
