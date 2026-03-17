@@ -146,8 +146,12 @@ def upload_image():
         files = request.files.getlist('leaf_files')
         
         if files and len(files) > 0 and files[0].filename != '':
+            # 1. Get or Create Date Folder
             today = datetime.now().strftime('%Y-%m-%d')
             date_folder_id = get_or_create_folder(today, session['user_folder_id'])
+            
+            # 2. Get or Create 'ori_image' folder under the Date Folder
+            ori_image_folder_id = get_or_create_folder('ori_image', date_folder_id)
             
             uploaded_count = 0
             for file in files:
@@ -155,7 +159,7 @@ def upload_image():
                     # Save location in the file description
                     file_metadata = {
                         'name': file.filename,
-                        'parents': [date_folder_id],
+                        'parents': [ori_image_folder_id], # Upload to ori_image folder
                         'description': f"Lat: {latitude}, Long: {longitude}"
                     }
                     media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
@@ -163,7 +167,7 @@ def upload_image():
                     uploaded_count += 1
             
             if uploaded_count > 0:
-                flash(f"Successfully uploaded and processed {uploaded_count} images. Please proceed to analysis for results.")
+                flash(f"Successfully uploaded {uploaded_count} images. Please proceed to analysis for results.")
             else:
                 flash("No valid images were uploaded.")
             return redirect(url_for('upload_image'))
@@ -176,15 +180,29 @@ def history():
         return redirect(url_for('login'))
     
     service = get_drive_service()
+    
+    # Get all Date folders for the user
     query = f"'{session['user_folder_id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     folders = service.files().list(q=query, fields="files(id, name)").execute().get('files', [])
     
     history_data = []
     for folder in folders:
-        file_query = f"'{folder['id']}' in parents and trashed = false"
-        files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
-        if files:
-            history_data.append({'date': folder['name'], 'files': files})
+        all_files = []
+        
+        # Look specifically for the 'ori_image' folder within the date folder
+        subfolder_query = f"name = 'ori_image' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        ori_folders = service.files().list(q=subfolder_query, fields="files(id, name)").execute().get('files', [])
+        
+        # Gather images ONLY from the 'ori_image' folder
+        for ori_folder in ori_folders:
+            file_query = f"'{ori_folder['id']}' in parents and trashed = false"
+            files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
+            if files:
+                all_files.extend(files)
+                
+        # Only add the date to history if there are images found in ori_image
+        if all_files:
+            history_data.append({'date': folder['name'], 'files': all_files})
     
     history_data.sort(key=lambda x: x['date'], reverse=True)
     return render_template('history.html', history_data=history_data, user_name=session.get('user_name'))

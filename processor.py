@@ -13,14 +13,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 # --- FIX: Ensure the local custom model package is imported ---
-# Get the directory of the current script, which is the project root.
-# This ensures that we are using the local 'segmentation_models_pytorch' package
-# located in the same directory, rather than a potentially installed one.
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_ROOT)
 
-# The library has a nested structure `segmentation_models_pytorch/segmentation_models_pytorch`.
-# We import the inner module which contains the model definitions.
 import segmentation_models_pytorch.segmentation_models_pytorch as smp
 
 # --- CONFIGURATION ---
@@ -43,8 +38,6 @@ net = smp.EfficientUnetPlusPlus(
 )
 
 # --- HOTFIX for 'act1' attribute error ---
-# The custom EfficientUnetPlusPlus model implementation assumes access to an 'act1'
-# attribute on the encoder, which is not present on the EfficientNetEncoder.
 try:
     if not hasattr(net.encoder, 'act1'):
         if hasattr(net.encoder, '_swish'):
@@ -88,6 +81,19 @@ def get_drive_service():
 
 service = get_drive_service()
 
+# --- Helper function to manage nested folders ---
+def get_or_create_folder(service, name, parent_id):
+    query = f"name = '{name}' and '{parent_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    results = service.files().list(q=query, fields="files(id)").execute()
+    
+    files = results.get('files', [])
+    if files:
+        return files[0]['id']
+    else:
+        file_metadata = {'name': name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [parent_id]}
+        folder = service.files().create(body=file_metadata, fields='id').execute()
+        return folder.get('id')
+
 # 3. Processing Function
 def process_and_upload(file_id, file_name, parent_id):
     try:
@@ -123,7 +129,7 @@ def process_and_upload(file_id, file_name, parent_id):
         mask_img.save(temp_mask_path)
 
         # Upload Mask back to Google Drive
-        mask_name = f"mask_{os.path.splitext(file_name)[0]}.png"
+        mask_name = f"{os.path.splitext(file_name)[0]}.png"
         file_metadata = {
             'name': mask_name,
             'parents': [parent_id],
@@ -158,7 +164,7 @@ def mask_exists(parent_id, original_file_name):
 def watch_drive():
     global service
     print("Listening for new image uploads in Google Drive...")
-    processed_files = set() # Use a set for faster lookups
+    processed_files = set() 
     
     try:
         response = service.changes().getStartPageToken().execute()
@@ -185,18 +191,31 @@ def watch_drive():
                     if file_info.get('trashed'):
                         continue
 
+                    # If it's an image and not already a mask
                     if file_info.get('mimeType', '').startswith('image/') and not file_info['name'].startswith('mask_'):
-                        parent_id = file_info.get('parents', [None])[0]
+                        parent_folder_id = file_info.get('parents', [None])[0]
                         
-                        if parent_id and not mask_exists(parent_id, file_info['name']):
-                            print(f"\nNew Image Detected: {file_info['name']} ({file_info['id']})")
-                            process_and_upload(file_id, file_info['name'], parent_id)
+                        if parent_folder_id:
+                            # 1. Fetch info about the folder the image was placed in
+                            parent_info = service.files().get(fileId=parent_folder_id, fields='name, parents').execute()
+                            
+                            # 2. Verify we are inside an "ori_image" directory 
+                            if parent_info.get('name') == 'ori_image':
+                                date_folder_id = parent_info.get('parents', [None])[0]
+                                
+                                if date_folder_id:
+                                    # 3. Locate or create the "predicted_mask" folder next to "ori_image"
+                                    pred_folder_id = get_or_create_folder(service, 'predicted_mask', date_folder_id)
+                                    
+                                    # 4. Process and upload into the predicted mask folder
+                                    if not mask_exists(pred_folder_id, file_info['name']):
+                                        print(f"\nNew Image Detected in ori_image folder: {file_info['name']} ({file_info['id']})")
+                                        process_and_upload(file_id, file_info['name'], pred_folder_id)
                         
                         processed_files.add(file_id)
                         if len(processed_files) > 1000:
-                            processed_files.pop() # Keep memory usage bounded
+                            processed_files.pop() 
                 except Exception:
-                    # This can happen if the file is deleted before we get info, which is fine.
                     pass
                     
             if 'newStartPageToken' in response:
@@ -210,7 +229,7 @@ def watch_drive():
                 service = get_drive_service()
             except Exception as auth_e:
                 print(f"Failed to recover: {auth_e}")
-            time.sleep(20) # Wait longer after a connection loss
+            time.sleep(20)
 
 if __name__ == '__main__':
     watch_drive()
