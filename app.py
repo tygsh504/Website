@@ -207,5 +207,73 @@ def history():
     history_data.sort(key=lambda x: x['date'], reverse=True)
     return render_template('history.html', history_data=history_data, user_name=session.get('user_name'))
 
+@app.route('/analysis')
+def analysis():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    service = get_drive_service()
+    
+    # Get all Date folders for the user
+    query = f"'{session['user_folder_id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    folders = service.files().list(q=query, fields="files(id, name)").execute().get('files', [])
+    
+    analysis_data = []
+    for folder in folders:
+        # Look for the 'ori_image' and 'predicted_mask' folders within the date folder
+        ori_query = f"name = 'ori_image' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        mask_query = f"name = 'predicted_mask' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        
+        ori_folders = service.files().list(q=ori_query, fields="files(id, name)").execute().get('files', [])
+        mask_folders = service.files().list(q=mask_query, fields="files(id, name)").execute().get('files', [])
+        
+        if not ori_folders:
+            continue
+            
+        ori_folder_id = ori_folders[0]['id']
+        mask_folder_id = mask_folders[0]['id'] if mask_folders else None
+        
+        # Get all original files
+        file_query = f"'{ori_folder_id}' in parents and trashed = false"
+        ori_files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink)").execute().get('files', [])
+        
+        # Get all mask files (if the mask folder exists yet)
+        mask_files = []
+        if mask_folder_id:
+            mask_files_query = f"'{mask_folder_id}' in parents and trashed = false"
+            mask_files = service.files().list(q=mask_files_query, fields="files(id, name, thumbnailLink, webViewLink)").execute().get('files', [])
+            
+        # Create a dictionary of masks to easily match them by filename
+        # We strip the extension to match "leaf1.jpg" with "leaf1.png"
+        mask_dict = {}
+        for mask in mask_files:
+            base_name = os.path.splitext(mask['name'])[0]
+            # Handle potential "mask_" prefix from processor.py logic
+            if base_name.startswith('mask_'):
+                base_name = base_name[5:]
+            mask_dict[base_name] = mask
+
+        pairs = []
+        for ori in ori_files:
+            base_name = os.path.splitext(ori['name'])[0]
+            matched_mask = mask_dict.get(base_name)
+            
+            pairs.append({
+                'name': ori['name'],
+                'ori_link': ori.get('thumbnailLink'),
+                'ori_view_link': ori.get('webViewLink'),
+                'mask_link': matched_mask.get('thumbnailLink') if matched_mask else None,
+                'mask_view_link': matched_mask.get('webViewLink') if matched_mask else None
+            })
+            
+        # Only add to data if there are actual images uploaded on that date
+        if pairs:
+            analysis_data.append({'date': folder['name'], 'pairs': pairs})
+    
+    # Sort by date descending (newest first)
+    analysis_data.sort(key=lambda x: x['date'], reverse=True)
+    
+    return render_template('analysis.html', analysis_data=analysis_data, user_name=session.get('user_name'))
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analysis Results - CropGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Specific Styles for Analysis Page Layout */
+        .analysis-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .analysis-date-group { margin-bottom: 50px; }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 30px;
+        }
+
+        .analysis-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+            border-color: #d1d5db;
+        }
+
+        .analysis-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .analysis-card-title {
+            font-weight: 700;
+            color: #111827;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 75%;
+        }
+
+        .analysis-status {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-ready { background: #dcfce7; color: #166534; }
+        .status-processing { background: #fef9c3; color: #854d0e; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .image-pair-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .image-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-box img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 220px;
+            border-radius: 8px;
+            border: 2px dashed #d1d5db;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+        }
+
+        .image-placeholder .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .image-label {
+            margin-top: 12px;
+            font-size: 0.95rem;
+            color: #4b5563;
+            font-weight: 600;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="upload-page-body">
+    <header>
+        <nav class="navbar navbar-solid">
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" style="height: 30px; width: auto;"> <strong>CropGuard AI</strong></div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('root') }}">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('history') }}">History</a>
+                    </div>
+                </li>
+                <li><a href="{{ url_for('analysis') if 'analysis' in url_for.__globals__ else '#' }}" class="active">Analysis</a></li>
+                <li><a href="#">Disease Map</a></li>
+            </ul>
+            <div class="user-actions">
+                <span class="user-name">{{ user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn"><span class="icon">⏻</span> Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="analysis-container">
+        <div class="upload-header">
+            <h2>Segmentation Results</h2>
+            <p>Compare original crop images with AI-generated disease masks</p>
+        </div>
+
+        {% if not analysis_data %}
+            <div class="empty-history">
+                <div class="icon">🔬</div>
+                <h3>No analysis results yet</h3>
+                <p>Upload your crop images first to see the segmentation output here. The AI model will automatically process your images in the background.</p>
+                <a href="{{ url_for('upload_image') }}" class="btn-theme-upload" style="text-decoration: none; margin-top: 15px;">
+                    Upload Images
+                </a>
+            </div>
+        {% else %}
+            {% for entry in analysis_data %}
+                <div class="analysis-date-group">
+                    <h3 class="date-divider">📅 {{ entry.date }}</h3>
+                    <div class="analysis-grid">
+                        {% for pair in entry.pairs %}
+                        <div class="analysis-card">
+                            <div class="analysis-card-header">
+                                <div class="analysis-card-title" title="{{ pair.name }}">{{ pair.name }}</div>
+                                {% if pair.mask_link %}
+                                    <span class="analysis-status status-ready">Analyzed ✓</span>
+                                {% else %}
+                                    <span class="analysis-status status-processing">Processing</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="image-pair-container">
+                                <div class="image-box">
+                                    <a href="{{ pair.ori_view_link }}" target="_blank" title="View Full Image">
+                                        <img src="{{ pair.ori_link }}" alt="Original Image">
+                                    </a>
+                                    <div class="image-label">Original Crop</div>
+                                </div>
+                                
+                                <div class="image-box">
+                                    {% if pair.mask_link %}
+                                        <a href="{{ pair.mask_view_link }}" target="_blank" title="View Full Mask">
+                                            <img src="{{ pair.mask_link }}" alt="Predicted Mask">
+                                        </a>
+                                    {% else %}
+                                        <div class="image-placeholder">
+                                            <div class="icon">⚙️</div>
+                                            <span>Generating Mask...</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="image-label">Disease Mask</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </main>
+
+    <footer class="site-footer" style="margin-top: auto;">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Contact Us</h3>
+                <div class="contact-person">
+                    <h4>Tong Yong Shen</h4>
+                    <p>📞 +60 11 2048 5425</p>
+                    <p>📩 tygsh504@gmail.com</p>
+                    <p>🎓 2200458@siswa.um.edu.my</p>
+                </div>
+                <div class="contact-person">
+                    <h4>Associate Prof. Ir. Dr. Norrima binti Mokhtar</h4>
+                    <p>📞 +60 10 245 5060</p>
+                    <p>📩 norrimamokhtar@um.edu.my</p>
+                </div>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Navigation</h3>
+                <ul class="footer-nav">
+                    <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
+                    <li><a href="#">Disease Map</a></li>
+                    <li><a href="#">Analysis</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Location</h3>
+                <div class="location-info">
+                    <h4>ACRLAB</h4>
+                    <p>Department of Electrical Engineering</p>
+                    <p>Universiti Malaya</p>
+                    <p>50603 Lembah Pantai</p>
+                    <p>Kuala Lumpur, Malaysia</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="https://github.com/tygsh504" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/yong-shen-tong-abbb4032b/">LinkedIn</a>
+                <a href="mailto:tygsh504@gmail.com">Email</a>
+            </div>
+            <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const processingElements = document.querySelectorAll('.status-processing');
+            if (processingElements.length > 0) {
+                // Refresh the page every 10 seconds if any masks are still generating
+                setTimeout(function() {
+                    window.location.reload();
+                }, 10000);
+            }
+        });
+    </script>
+</body>
+</html>
