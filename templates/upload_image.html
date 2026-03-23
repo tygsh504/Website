@@ -148,8 +148,7 @@
                             </th>
                             <th style="width: 70px;">Image</th>
                             <th>File Name</th>
-                            <th>Size</th>
-                            <th style="width: 80px; text-align: center;">Action</th>
+                            <th>Location</th> <th style="width: 80px; text-align: center;">Action</th>
                         </tr>
                     </thead>
                     <tbody id="preview-tbody">
@@ -158,9 +157,7 @@
             </div>
 
             <form id="upload-form" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data" style="text-align: right; margin-top: 20px;">
-                <input type="hidden" id="latitude" name="latitude" value="Unknown">
-                <input type="hidden" id="longitude" name="longitude" value="Unknown">
-                <input type="file" id="final-files" name="leaf_files" multiple style="display: none;">
+                <input type="hidden" id="file-metadata" name="file_metadata"> <input type="file" id="final-files" name="leaf_files" multiple style="display: none;">
                 
                 <button type="button" id="submit-btn" class="btn-theme-upload" onclick="confirmUploadAndProcess()">
                     Process
@@ -231,7 +228,6 @@
 
     <script>
         let selectedFiles = [];
-        let gpsFetched = false;
         
         const tbody = document.getElementById('preview-tbody');
         const finalFilesInput = document.getElementById('final-files');
@@ -244,20 +240,26 @@
         const uploadModal = document.getElementById('upload-modal');
         const modalFileCount = document.getElementById('modal-file-count');
 
-        function prefetchGPS() {
-            if (!gpsFetched && navigator.geolocation) {
+        // New function to wait for GPS resolution before adding files
+        async function getGPS() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve({lat: "Unknown", lon: "Unknown"});
+                    return;
+                }
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
-                        document.getElementById('latitude').value = position.coords.latitude;
-                        document.getElementById('longitude').value = position.coords.longitude;
-                        gpsFetched = true;
+                        resolve({
+                            lat: position.coords.latitude.toFixed(6), 
+                            lon: position.coords.longitude.toFixed(6)
+                        });
                     },
                     function(error) {
-                        console.log("GPS Location access denied or unavailable.");
+                        resolve({lat: "Unknown", lon: "Unknown"});
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
                 );
-            }
+            });
         }
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -274,11 +276,17 @@
 
         dropzone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files), false);
 
-        function handleFiles(files) {
-            prefetchGPS(); 
+        // Modified to attach coordinates to each individual file object
+        async function handleFiles(files) {
+            const coords = await getGPS();
             let invalidFiles = [];
+            
             for (let i = 0; i < files.length; i++) {
                 if (files[i].type.startsWith('image/')) {
+                    // Assign specific GPS data to this file instance
+                    files[i].customLat = coords.lat;
+                    files[i].customLon = coords.lon;
+                    
                     if (!selectedFiles.some(f => f.name === files[i].name && f.size === files[i].size)) {
                         selectedFiles.push(files[i]);
                     }
@@ -326,13 +334,17 @@
 
         function renderTable() {
             tbody.innerHTML = '';
+            const metadata = [];
+            
             if (selectedFiles.length === 0) {
                 preuploadSection.style.display = 'none';
             } else {
                 preuploadSection.style.display = 'block';
                 selectedFiles.forEach((file, index) => {
+                    // Collect metadata to send to Flask
+                    metadata.push({ name: file.name, lat: file.customLat, lon: file.customLon });
+                    
                     const tr = document.createElement('tr');
-                    const sizeKB = (file.size / 1024).toFixed(1);
                     const fileUrl = URL.createObjectURL(file);
 
                     tr.innerHTML = `
@@ -343,7 +355,9 @@
                             <img src="${fileUrl}" alt="Preview">
                         </td>
                         <td class="filename-cell" title="${file.name}">${file.name}</td>
-                        <td style="color: #6b7280;">${sizeKB} KB</td>
+                        <td style="color: #6b7280; font-size: 0.9rem;">
+                            Lat: ${file.customLat}<br>Long: ${file.customLon}
+                        </td>
                         <td style="text-align: center;">
                             <button type="button" class="row-delete-icon" onclick="removeFile(${index})" title="Remove">✕</button>
                         </td>
@@ -355,6 +369,10 @@
             const dt = new DataTransfer();
             selectedFiles.forEach(file => dt.items.add(file));
             finalFilesInput.files = dt.files;
+            
+            // Populate the hidden input with the JSON array map of file locations
+            document.getElementById('file-metadata').value = JSON.stringify(metadata);
+            
             updateBulkDeleteState();
         }
 
