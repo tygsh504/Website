@@ -20,7 +20,7 @@
                     </div>
                 </li>
                 <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
-                <li><a href="#">Disease Map</a></li>
+                <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
             </ul>
             <div class="user-actions">
                 <span class="user-name">{{ user_name }}</span>
@@ -69,7 +69,7 @@
                 <h3>Navigation</h3>
                 <ul class="footer-nav">
                     <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
-                    <li><a href="#">Disease Map</a></li>
+                    <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
                     <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
                 </ul>
             </div>

@@ -2,6 +2,7 @@ import io
 import os
 import os.path 
 import json
+import re
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from dotenv import load_dotenv
@@ -278,6 +279,51 @@ def analysis():
     analysis_data.sort(key=lambda x: x['date'], reverse=True)
     
     return render_template('analysis.html', analysis_data=analysis_data, user_name=session.get('user_name'))
+
+@app.route('/disease_map')
+def disease_map():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    service = get_drive_service()
+    
+    # Get all Date folders for the user
+    query = f"'{session['user_folder_id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    folders = service.files().list(q=query, fields="files(id, name)").execute().get('files', [])
+    
+    map_data = []
+    
+    for folder in folders:
+        # We look inside 'ori_image' for the uploaded files
+        subfolder_query = f"name = 'ori_image' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        ori_folders = service.files().list(q=subfolder_query, fields="files(id, name)").execute().get('files', [])
+        
+        for ori_folder in ori_folders:
+            file_query = f"'{ori_folder['id']}' in parents and trashed = false"
+            files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
+            
+            for file in files:
+                desc = file.get('description', '')
+                # Extract coordinates safely using regex
+                coords = re.findall(r"[-+]?\d*\.\d+|\d+", desc)
+                if len(coords) >= 2:
+                    try:
+                        lat = float(coords[0])
+                        lon = float(coords[1])
+                        # Ignore 0.0 which might happen if GPS was "Unknown" but parsed incorrectly
+                        if lat != 0.0 and lon != 0.0:
+                            map_data.append({
+                                'name': file['name'],
+                                'lat': lat,
+                                'lon': lon,
+                                'thumbnail': file.get('thumbnailLink', ''),
+                                'link': file.get('webViewLink', ''),
+                                'date': folder['name']
+                            })
+                    except ValueError:
+                        continue
+                        
+    return render_template('disease_map.html', map_data=map_data, user_name=session.get('user_name'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

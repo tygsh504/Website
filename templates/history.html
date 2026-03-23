@@ -20,7 +20,7 @@
                     </div>
                 </li>
                 <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
-                <li><a href="#">Disease Map</a></li>
+                <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
             </ul>
             <div class="user-actions">
                 <span class="user-name">{{ user_name }}</span>
@@ -52,8 +52,15 @@
                         {% for file in entry.files %}
                             <div class="history-item">
                                 <img src="{{ file.thumbnailLink }}" alt="Scan">
-                                <p><strong>{{ file.name }}</strong></p>
-                                <p style="font-size: 0.8rem; color: #6b7280;">📍 {{ file.description }}</p>
+                                <p title="{{ file.name }}"><strong>{{ file.name }}</strong></p>
+                                
+                                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px;">
+                                    <span style="font-size: 1.2rem; flex-shrink: 0;">📍</span>
+                                    <span style="font-size: 0.75rem; color: #6b7280; text-align: left; line-height: 1.5; white-space: nowrap;">
+                                        {{ file.description | replace(', ', '<br>') | safe }}
+                                    </span>
+                                </div>
+
                             </div>
                         {% endfor %}
                     </div>
@@ -83,7 +90,7 @@
                 <h3>Navigation</h3>
                 <ul class="footer-nav">
                     <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
-                    <li><a href="#">Disease Map</a></li>
+                    <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
                     <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
                 </ul>
             </div>
