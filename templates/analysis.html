@@ -170,12 +170,12 @@
                         <div class="analysis-card">
                             <div class="analysis-card-header">
                                 <div class="analysis-card-title" title="{{ pair.name }}">{{ pair.name }}</div>
-                                {% if pair.mask_link %}
-                                    <span class="analysis-status status-ready">Analyzed ✓</span>
-                                {% else %}
-                                    <span class="analysis-status status-processing">Processing</span>
-                                {% endif %}
-                            </div>
+                                <div style="font-size: 0.85rem; color: #1b332a; font-weight: 600;">📍 {{ pair.location }}</div> {% if pair.mask_link %}
+                                <span class="analysis-status status-ready">Analyzed ✓</span>
+                        {% else %}
+                                <span class="analysis-status status-processing">Processing</span>
+                        {% endif %}
+                        </div>
                             
                             <div class="image-pair-container">
                                 <div class="image-box">

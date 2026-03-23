@@ -52,8 +52,8 @@
                         {% for file in entry.files %}
                             <div class="history-item">
                                 <img src="{{ file.thumbnailLink }}" alt="Scan">
-                                <p>{{ file.name }}</p>
-                                <a href="{{ file.webViewLink }}" target="_blank">View in Drive</a>
+                                <p><strong>{{ file.name }}</strong></p>
+                                <p style="font-size: 0.8rem; color: #6b7280;">📍 {{ file.description }}</p> <a href="{{ file.webViewLink }}" target="_blank">View in Drive</a>
                             </div>
                         {% endfor %}
                     </div>

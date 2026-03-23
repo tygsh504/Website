@@ -1,6 +1,7 @@
 import io
 import os
 import os.path 
+import json
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from dotenv import load_dotenv
@@ -141,8 +142,11 @@ def upload_image():
     
     if request.method == 'POST':
         service = get_drive_service()
-        latitude = request.form.get('latitude', 'Unknown')
-        longitude = request.form.get('longitude', 'Unknown')
+        
+        # Retrieve the individual GPS metadata sent from the frontend
+        metadata_raw = request.form.get('file_metadata', '[]')
+        file_gps_map = json.loads(metadata_raw)
+        
         files = request.files.getlist('leaf_files')
         
         if files and len(files) > 0 and files[0].filename != '':
@@ -156,18 +160,21 @@ def upload_image():
             uploaded_count = 0
             for file in files:
                 if file.filename and file.mimetype.startswith('image/'):
-                    # Save location in the file description
+                    # Match the specific GPS coordinates for this individual file
+                    gps = next((m for m in file_gps_map if m['name'] == file.filename), {"lat": "Unknown", "lon": "Unknown"})
+                    
+                    # Save individual location in the file description
                     file_metadata = {
                         'name': file.filename,
-                        'parents': [ori_image_folder_id], # Upload to ori_image folder
-                        'description': f"Lat: {latitude}, Long: {longitude}"
+                        'parents': [ori_image_folder_id], 
+                        'description': f"Lat: {gps['lat']}, Long: {gps['lon']}"
                     }
                     media = MediaIoBaseUpload(io.BytesIO(file.read()), mimetype=file.mimetype)
                     service.files().create(body=file_metadata, media_body=media).execute()
                     uploaded_count += 1
             
             if uploaded_count > 0:
-                flash(f"Successfully uploaded {uploaded_count} images. Please proceed to analysis for results.")
+                flash(f"Successfully uploaded {uploaded_count} images with location tags.")
             else:
                 flash("No valid images were uploaded.")
             return redirect(url_for('upload_image'))
@@ -195,6 +202,7 @@ def history():
         
         # Gather images ONLY from the 'ori_image' folder
         for ori_folder in ori_folders:
+            # Request 'description' to retrieve individual GPS data
             file_query = f"'{ori_folder['id']}' in parents and trashed = false"
             files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
             if files:
@@ -233,9 +241,9 @@ def analysis():
         ori_folder_id = ori_folders[0]['id']
         mask_folder_id = mask_folders[0]['id'] if mask_folders else None
         
-        # Get all original files
+        # Request 'description' to display individual location data in analysis
         file_query = f"'{ori_folder_id}' in parents and trashed = false"
-        ori_files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink)").execute().get('files', [])
+        ori_files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
         
         # Get all mask files (if the mask folder exists yet)
         mask_files = []
@@ -243,12 +251,9 @@ def analysis():
             mask_files_query = f"'{mask_folder_id}' in parents and trashed = false"
             mask_files = service.files().list(q=mask_files_query, fields="files(id, name, thumbnailLink, webViewLink)").execute().get('files', [])
             
-        # Create a dictionary of masks to easily match them by filename
-        # We strip the extension to match "leaf1.jpg" with "leaf1.png"
         mask_dict = {}
         for mask in mask_files:
             base_name = os.path.splitext(mask['name'])[0]
-            # Handle potential "mask_" prefix from processor.py logic
             if base_name.startswith('mask_'):
                 base_name = base_name[5:]
             mask_dict[base_name] = mask
@@ -260,17 +265,16 @@ def analysis():
             
             pairs.append({
                 'name': ori['name'],
+                'location': ori.get('description', 'No location data'), # Retrieve the unique location
                 'ori_link': ori.get('thumbnailLink'),
                 'ori_view_link': ori.get('webViewLink'),
                 'mask_link': matched_mask.get('thumbnailLink') if matched_mask else None,
                 'mask_view_link': matched_mask.get('webViewLink') if matched_mask else None
             })
             
-        # Only add to data if there are actual images uploaded on that date
         if pairs:
             analysis_data.append({'date': folder['name'], 'pairs': pairs})
     
-    # Sort by date descending (newest first)
     analysis_data.sort(key=lambda x: x['date'], reverse=True)
     
     return render_template('analysis.html', analysis_data=analysis_data, user_name=session.get('user_name'))
