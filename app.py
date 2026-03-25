@@ -178,9 +178,18 @@ def upload_image():
                 flash(f"Successfully uploaded {uploaded_count} images with location tags.")
             else:
                 flash("No valid images were uploaded.")
-            return redirect(url_for('upload_image'))
+                
+            # UPDATED: Redirect back to the referrer (Capture or Upload page)
+            return redirect(request.referrer or url_for('upload_image'))
             
     return render_template('upload_image.html', user_name=session.get('user_name'))
+
+# --- NEW ROUTE FOR CAMERA CAPTURE ---
+@app.route('/capture')
+def capture_image():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('capture.html', user_name=session.get('user_name'))
 
 @app.route('/history')
 def history():

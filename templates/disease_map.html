@@ -18,6 +18,7 @@
                     <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
                     <div class="dropdown-content">
                         <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('capture_image') }}">Capture Image</a>
                         <a href="{{ url_for('history') }}">History</a>
                     </div>
                 </li>
@@ -33,8 +34,10 @@
 
     <div class="map-layout">
         <div class="map-sidebar">
-            <h2>Disease Analysis</h2>
-            <p class="subtitle">Geographical monitoring and high-risk clustering.</p>
+            <div class="map-sidebar-header">
+                <h2>Disease Analysis</h2>
+                <p class="subtitle">Geographical monitoring of infection levels</p>
+            </div>
             
             <div class="sidebar-stats-wrapper">
                 <div class="stat-box flex-1">
@@ -43,14 +46,16 @@
                 </div>
                 <div class="stat-box high-risk flex-1">
                     <h3 id="high-risk-count">0</h3>
-                    <span>High Risk Zones</span>
+                    <span>High Infection</span>
                 </div>
-            </div>
-            
-            <h3 class="sidebar-cluster-title">Detected Clusters</h3>
-            
-            <div id="cluster-list">
-                <p class="cluster-loading-text">Scanning map for high-density disease areas...</p>
+                <div class="stat-box medium-risk flex-1">
+                    <h3 id="medium-risk-count">0</h3>
+                    <span>Medium Infection</span>
+                </div>
+                <div class="stat-box low-risk flex-1">
+                    <h3 id="low-risk-count">0</h3>
+                    <span>Low Infection</span>
+                </div>
             </div>
         </div>
 
@@ -64,10 +69,11 @@
         const rawData = {{ map_data | tojson }};
         
         // Settings for Analysis
-        const HIGH_RISK_RADIUS = 30; // meters (Distance to group markers)
-        const HIGH_RISK_MIN_POINTS = 2; // Minimum markers in radius to flag as high risk
+        const CLUSTER_RADIUS = 30; // meters (Distance to group markers)
+        const HIGH_THRESHOLD = 4; // 4 or more cases in radius
+        const MEDIUM_THRESHOLD = 2; // 2-3 cases in radius
         
-        // Initialize Map (Added attributionControl: false to remove the Leaflet logo)
+        // Initialize Map
         const map = L.map('map', { attributionControl: false }).setView([4.2105, 101.9758], 6);
         
         // Add OpenStreetMap Tiles
@@ -87,15 +93,19 @@
             return R * c;
         }
 
-        // Custom Icons
-        const defaultIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        // Custom Colored Icons
+        const redIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
         });
-
-        const dangerIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        const orangeIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+        const yellowIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
         });
@@ -114,7 +124,7 @@
             rawData.forEach((otherPoint, j) => {
                 if (i !== j && !visited.has(j)) {
                     let distance = getDistance(point.lat, point.lon, otherPoint.lat, otherPoint.lon);
-                    if (distance <= HIGH_RISK_RADIUS) {
+                    if (distance <= CLUSTER_RADIUS) {
                         currentCluster.push(otherPoint);
                         visited.add(j);
                     }
@@ -123,46 +133,44 @@
             clusters.push(currentCluster);
         });
 
-        // Map rendering
+        // Map rendering variables
         let bounds = [];
-        let highRiskCount = 0;
-        const clusterListDiv = document.getElementById('cluster-list');
-        clusterListDiv.innerHTML = '';
+        let highCases = 0, mediumCases = 0, lowCases = 0;
 
-        if (rawData.length === 0) {
-            clusterListDiv.innerHTML = '<p class="cluster-empty-text">No geographic data found yet. Upload images with GPS location enabled.</p>';
-        }
-
-        clusters.forEach((cluster, index) => {
-            let isHighRisk = cluster.length >= HIGH_RISK_MIN_POINTS;
+        clusters.forEach((cluster) => {
+            let size = cluster.length;
+            let iconToUse, circleColor;
             
-            // Calculate center of cluster for drawing the circle
-            let centerLat = cluster.reduce((sum, p) => sum + p.lat, 0) / cluster.length;
-            let centerLon = cluster.reduce((sum, p) => sum + p.lon, 0) / cluster.length;
-            
-            if (isHighRisk) {
-                highRiskCount++;
-                // Draw a warning circle
-                L.circle([centerLat, centerLon], {
-                    color: '#dc2626',
-                    fillColor: '#ef4444',
-                    fillOpacity: 0.2,
-                    radius: HIGH_RISK_RADIUS
-                }).addTo(map);
-
-                // Add sidebar card
-                clusterListDiv.innerHTML += `
-                    <div class="cluster-card">
-                        <h4>⚠️ High Risk Zone ${highRiskCount}</h4>
-                        <p><strong>Density:</strong> ${cluster.length} affected crops found within a ${HIGH_RISK_RADIUS}m radius.</p>
-                        <p class="cluster-coords-text">📍 ${centerLat.toFixed(5)}, ${centerLon.toFixed(5)}</p>
-                    </div>
-                `;
+            if (size >= HIGH_THRESHOLD) {
+                iconToUse = redIcon;
+                circleColor = '#dc2626'; // Red
+                highCases += size;
+            } else if (size >= MEDIUM_THRESHOLD) {
+                iconToUse = orangeIcon;
+                circleColor = '#f97316'; // Orange
+                mediumCases += size;
+            } else {
+                iconToUse = yellowIcon;
+                circleColor = '#eab308'; // Yellow
+                lowCases += size;
             }
             
-            // Plot individual markers
+            // Draw a warning circle for grouped clusters (Medium and High)
+            if (size >= MEDIUM_THRESHOLD) {
+                let centerLat = cluster.reduce((sum, p) => sum + p.lat, 0) / size;
+                let centerLon = cluster.reduce((sum, p) => sum + p.lon, 0) / size;
+                
+                L.circle([centerLat, centerLon], {
+                    color: circleColor,
+                    fillColor: circleColor,
+                    fillOpacity: 0.2,
+                    radius: CLUSTER_RADIUS
+                }).addTo(map);
+            }
+            
+            // Plot individual markers with respective color
             cluster.forEach(point => {
-                let marker = L.marker([point.lat, point.lon], { icon: isHighRisk ? dangerIcon : defaultIcon }).addTo(map);
+                let marker = L.marker([point.lat, point.lon], { icon: iconToUse }).addTo(map);
                 
                 // Add popup
                 marker.bindPopup(`
@@ -175,10 +183,10 @@
             });
         });
 
-        document.getElementById('high-risk-count').innerText = highRiskCount;
-        if (highRiskCount === 0 && rawData.length > 0) {
-             clusterListDiv.innerHTML = '<p class="cluster-safe-text">No high-density disease clusters detected. Spacing is currently safe.</p>';
-        }
+        // Update UI
+        document.getElementById('high-risk-count').innerText = highCases;
+        document.getElementById('medium-risk-count').innerText = mediumCases;
+        document.getElementById('low-risk-count').innerText = lowCases;
 
         // Adjust map to show all pins
         if (bounds.length > 0) {

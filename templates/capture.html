@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Capture Image - CropGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="upload-page-body">
+    <header>
+        <nav class="navbar navbar-solid">
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> <strong>CropGuard AI</strong></div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('root') }}">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn active">Upload ▾</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('capture_image') }}">Capture Image</a>
+                        <a href="{{ url_for('history') }}">History</a>
+                    </div>
+                </li>
+                <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
+            </ul>
+            <div class="user-actions">
+                <span class="user-name">{{ user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn"><span class="icon">⏻</span> Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="upload-container">
+        <div class="upload-header">
+            <h2>Capture Crop Images</h2>
+            <p>Use your device's camera to take photos of crops in real-time.</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="success-message">
+              {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="camera-container">
+            <div class="video-wrapper">
+                <div class="camera-placeholder" id="camera-placeholder">
+                    <div class="icon-cloud" style="font-size: 3rem; margin-bottom: 10px;">📷</div>
+                    <p>Camera is off</p>
+                </div>
+                <video id="camera-stream" autoplay playsinline></video>
+            </div>
+            
+            <div class="camera-controls">
+                <button type="button" class="btn-theme-secondary" id="btn-start-camera" onclick="startCamera()">🟢 Start Camera</button>
+                <button type="button" class="btn-theme-secondary" id="btn-switch-camera" onclick="switchCamera()" style="display: none;">🔄 Switch Camera</button>
+                <button type="button" class="btn-capture" id="btn-capture" onclick="captureImage()" disabled>📸 Take Picture</button>
+            </div>
+            
+            <canvas id="capture-canvas" class="d-none"></canvas>
+        </div>
+        
+        <div id="preupload-section" class="d-none">
+            <div class="btn-action-group">
+                <h3 class="preupload-section-title">Captured Images</h3>
+                <button type="button" id="bulk-delete-btn" class="btn-theme-delete" disabled onclick="deleteSelected()">
+                    🗑️ Delete Selected (<span id="selected-count">0</span>)
+                </button>
+            </div>
+
+            <div class="preupload-table-wrapper">
+                <table class="preupload-table">
+                    <thead>
+                        <tr>
+                            <th class="th-checkbox"><input type="checkbox" id="selectAllCb" onchange="toggleSelectAll()"></th>
+                            <th class="th-image">Image</th>
+                            <th>File Name</th>
+                            <th>Location</th> 
+                            <th class="th-action">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-tbody"></tbody>
+                </table>
+            </div>
+
+            <form id="upload-form" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data" class="upload-form-wrapper">
+                <input type="hidden" id="file-metadata" name="file_metadata"> 
+                <input type="file" id="final-files" name="leaf_files" multiple class="d-none">
+                <button type="button" id="submit-btn" class="btn-theme-upload" onclick="confirmUploadAndProcess()">Process</button>
+            </form>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="upload-modal">
+        <div class="modal-box">
+            <div class="modal-icon">🚀</div>
+            <h3 class="modal-title">Confirm Upload</h3>
+            <p class="modal-text">You are about to upload and process <strong id="modal-file-count">0</strong> images. Do you want to continue?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-theme-upload" onclick="executeUpload()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Camera Variables
+        const video = document.getElementById('camera-stream');
+        const canvas = document.getElementById('capture-canvas');
+        const placeholder = document.getElementById('camera-placeholder');
+        const btnCapture = document.getElementById('btn-capture');
+        const btnSwitchCamera = document.getElementById('btn-switch-camera');
+        let currentStream = null;
+        let useFrontCamera = false;
+        
+        // Table Variables
+        let selectedFiles = [];
+        const tbody = document.getElementById('preview-tbody');
+        const finalFilesInput = document.getElementById('final-files');
+        const preuploadSection = document.getElementById('preupload-section');
+        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        const selectAllCb = document.getElementById('selectAllCb');
+        const selectedCountSpan = document.getElementById('selected-count');
+        const uploadForm = document.getElementById('upload-form');
+        const uploadModal = document.getElementById('upload-modal');
+        const modalFileCount = document.getElementById('modal-file-count');
+
+        // --- Camera Logic ---
+        // --- Camera Logic ---
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Ask the browser for the ideal portrait resolution
+            const constraints = {
+                video: { 
+                    facingMode: (useFrontCamera ? "user" : "environment"),
+                    width: { ideal: 480 },
+                    height: { ideal: 640 }
+                }
+            };
+            
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+                placeholder.style.display = 'none';
+                btnCapture.disabled = false;
+                btnSwitchCamera.style.display = 'inline-flex';
+                document.getElementById('btn-start-camera').innerHTML = '🔴 Stop Camera';
+                document.getElementById('btn-start-camera').onclick = stopCamera;
+            } catch (err) {
+                alert("Could not access camera. Please ensure permissions are granted.");
+                console.error(err);
+            }
+        }
+
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                currentStream = null;
+                placeholder.style.display = 'flex';
+                btnCapture.disabled = true;
+                btnSwitchCamera.style.display = 'none';
+                document.getElementById('btn-start-camera').innerHTML = '🟢 Start Camera';
+                document.getElementById('btn-start-camera').onclick = startCamera;
+            }
+        }
+
+        function switchCamera() {
+            useFrontCamera = !useFrontCamera;
+            startCamera();
+        }
+
+        async function captureImage() {
+            if (!currentStream) return;
+            
+            // 1. Force exact target dimensions
+            const TARGET_WIDTH = 480;
+            const TARGET_HEIGHT = 640;
+            
+            canvas.width = TARGET_WIDTH;
+            canvas.height = TARGET_HEIGHT;
+            const ctx = canvas.getContext('2d');
+            
+            // 2. Calculate scaling to center-crop the video feed perfectly
+            const videoRatio = video.videoWidth / video.videoHeight;
+            const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
+            let drawWidth, drawHeight, startX, startY;
+
+            if (videoRatio > targetRatio) {
+                drawHeight = TARGET_HEIGHT;
+                drawWidth = video.videoWidth * (TARGET_HEIGHT / video.videoHeight);
+                startX = (TARGET_WIDTH - drawWidth) / 2;
+                startY = 0;
+            } else {
+                drawWidth = TARGET_WIDTH;
+                drawHeight = video.videoHeight * (TARGET_WIDTH / video.videoWidth);
+                startX = 0;
+                startY = (TARGET_HEIGHT - drawHeight) / 2;
+            }
+            
+            // 3. Draw the cropped frame to the canvas
+            ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
+            
+            // Visual flash effect on the video feed
+            video.style.opacity = 0;
+            setTimeout(() => video.style.opacity = 1, 150);
+            
+            // Convert to Blob and then to File
+            canvas.toBlob(async (blob) => {
+                const coords = await getGPS();
+                
+                // Create unique filename based on timestamp
+                const filename = `capture_${Date.now()}.jpg`;
+                const file = new File([blob], filename, { type: "image/jpeg" });
+                
+                // Attach GPS
+                file.customLat = coords.lat;
+                file.customLon = coords.lon;
+                
+                selectedFiles.push(file);
+                renderTable();
+
+                // --- NEW: FEEDBACK & AUTO-SCROLL MECHANISM ---
+                
+                // A. Button text and color feedback
+                const originalText = btnCapture.innerHTML;
+                btnCapture.innerHTML = '✅ Captured!';
+                btnCapture.style.backgroundColor = '#22c55e'; // Success green
+                
+                // Revert button back to normal after 1.5 seconds
+                setTimeout(() => {
+                    btnCapture.innerHTML = originalText;
+                    btnCapture.style.backgroundColor = ''; // Reverts to CSS default
+                }, 1500);
+                
+            }, 'image/jpeg', 0.95); // High-quality JPEG
+        }
+
+        // --- GPS Logic ---
+        async function getGPS() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve({lat: "Unknown", lon: "Unknown"});
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        resolve({
+                            lat: position.coords.latitude.toFixed(6), 
+                            lon: position.coords.longitude.toFixed(6)
+                        });
+                    },
+                    function(error) {
+                        resolve({lat: "Unknown", lon: "Unknown"});
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
+            });
+        }
+
+        // --- Table & Upload Logic (Identical to upload_image.html) ---
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            selectAllCb.checked = false; 
+            renderTable();
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAllCb.checked);
+            updateBulkDeleteState();
+        }
+
+        function updateBulkDeleteState() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            selectedCountSpan.textContent = checkedCount;
+            bulkDeleteBtn.disabled = checkedCount === 0;
+            if (checkboxes.length > 0) {
+                selectAllCb.checked = checkedCount === checkboxes.length;
+            }
+        }
+
+        function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            for (let i = checkboxes.length - 1; i >= 0; i--) {
+                if (checkboxes[i].checked) {
+                    selectedFiles.splice(i, 1);
+                }
+            }
+            selectAllCb.checked = false;
+            renderTable();
+        }
+
+        function renderTable() {
+            tbody.innerHTML = '';
+            const metadata = [];
+            
+            if (selectedFiles.length === 0) {
+                preuploadSection.style.display = 'none';
+            } else {
+                preuploadSection.style.display = 'block';
+                selectedFiles.forEach((file, index) => {
+                    metadata.push({ name: file.name, lat: file.customLat, lon: file.customLon });
+                    
+                    const tr = document.createElement('tr');
+                    const fileUrl = URL.createObjectURL(file);
+
+                    tr.innerHTML = `
+                        <td class="td-center"><input type="checkbox" class="row-checkbox" onchange="updateBulkDeleteState()"></td>
+                        <td class="preupload-img-cell"><img src="${fileUrl}" alt="Preview"></td>
+                        <td class="filename-cell" title="${file.name}">${file.name}</td>
+                        <td class="td-location">Lat: ${file.customLat}<br>Long: ${file.customLon}</td>
+                        <td class="td-center"><button type="button" class="row-delete-icon" onclick="removeFile(${index})" title="Remove">✕</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            finalFilesInput.files = dt.files;
+            
+            document.getElementById('file-metadata').value = JSON.stringify(metadata);
+            updateBulkDeleteState();
+        }
+
+        function confirmUploadAndProcess() {
+            if (selectedFiles.length === 0) return;
+            modalFileCount.innerText = selectedFiles.length;
+            uploadModal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            uploadModal.style.display = 'none';
+        }
+
+        function executeUpload() {
+            closeModal();
+            stopCamera(); // Turn off camera during upload
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerHTML = '⏳ Uploading & Processing...';
+            setTimeout(() => { submitBtn.disabled = true; }, 10);
+            uploadForm.submit();
+        }
+    </script>
+</body>
+</html>

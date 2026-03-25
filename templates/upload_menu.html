@@ -16,6 +16,7 @@
                     <a href="{{ url_for('upload_menu') }}" class="dropbtn active">Upload ▾</a>
                     <div class="dropdown-content">
                         <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('capture_image') }}">Capture Image</a>
                         <a href="{{ url_for('history') }}">History</a>
                     </div>
                 </li>
@@ -37,9 +38,14 @@
 
         <div class="upload-options-wrapper gap-30">
             <a href="{{ url_for('upload_image') }}" class="upload-card">
-                <div class="icon">📷</div>
+                <div class="icon">📤</div>
                 <h3>Upload Image</h3>
                 <p>Upload single images, multiple images, or entire folders of crop data.</p>
+            </a>
+            <a href="{{ url_for('capture_image') }}" class="upload-card">
+                <div class="icon">📸</div>
+                <h3>Capture Image</h3>
+                <p>Use your device's camera to take photos of crops in real-time.</p>
             </a>
             <a href="{{ url_for('history') }}" class="upload-card">
                 <div class="icon">⏳</div>
@@ -69,6 +75,7 @@
                 <h3>Navigation</h3>
                 <ul class="footer-nav">
                     <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
+                    <li><a href="{{ url_for('capture_image') }}">Capture Image</a></li>
                     <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
                     <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
                 </ul>
