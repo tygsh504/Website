@@ -11,7 +11,7 @@
     <div class="login-container">
         <div class="login-header">
             <div class="logo-wrapper">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" style="height: 24px; width: auto; filter: brightness(0) invert(1);"> 
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="login-logo-img"> 
                 <strong>CropGuard AI</strong>
             </div>
             <h1>Crop Disease<br>Segmentation</h1>
@@ -20,7 +20,7 @@
 
         {% with messages = get_flashed_messages() %}
           {% if messages %}
-            <div class="error-message" style="background-color: #fee2e2; color: #991b1b; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;">
+            <div class="error-message">
               {{ messages[0] }}
             </div>
           {% endif %}

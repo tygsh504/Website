@@ -9,7 +9,7 @@
 <body class="upload-page-body">
     <header>
         <nav class="navbar navbar-solid">
-            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" style="height: 30px; width: auto;"> <strong>CropGuard AI</strong></div>
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> <strong>CropGuard AI</strong></div>
             <ul class="nav-links">
                 <li><a href="{{ url_for('root') }}">Home</a></li>
                 <li class="dropdown">
@@ -29,7 +29,7 @@
         </nav>
     </header>
 
-    <main class="upload-container" style="max-width: 1000px;">
+    <main class="upload-container upload-container-wide">
         <div class="upload-header">
             <h2>Your Analysis History</h2>
             <p>Grouped by upload date</p>
@@ -40,7 +40,7 @@
                 <div class="icon">🌿</div>
                 <h3>No history yet</h3>
                 <p>It looks like you haven't analyzed any crop images yet. Upload your first leaf image to start detecting diseases, tracking geographical spread, and building your analysis history.</p>
-                <a href="{{ url_for('upload_image') }}" class="btn-theme-upload" style="text-decoration: none;">
+                <a href="{{ url_for('upload_image') }}" class="btn-theme-upload text-decoration-none">
                     Upload Your First Image
                 </a>
             </div>
@@ -54,9 +54,9 @@
                                 <img src="{{ file.thumbnailLink }}" alt="Scan">
                                 <p title="{{ file.name }}"><strong>{{ file.name }}</strong></p>
                                 
-                                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px;">
-                                    <span style="font-size: 1.2rem; flex-shrink: 0;">📍</span>
-                                    <span style="font-size: 0.75rem; color: #6b7280; text-align: left; line-height: 1.5; white-space: nowrap;">
+                                <div class="history-location-wrapper">
+                                    <span class="history-location-icon">📍</span>
+                                    <span class="history-location-text">
                                         {{ file.description | replace(', ', '<br>') | safe }}
                                     </span>
                                 </div>
@@ -69,7 +69,7 @@
         {% endif %}
     </main>
 
-    <footer class="site-footer" style="margin-top: auto;">
+    <footer class="site-footer footer-mt-auto">
         <div class="footer-container">
             <div class="footer-col">
                 <h3>Contact Us</h3>

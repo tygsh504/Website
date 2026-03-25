@@ -5,128 +5,11 @@
     <title>Analysis Results - CropGuard AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        /* Specific Styles for Analysis Page Layout */
-        .analysis-container {
-            max-width: 1200px;
-            margin: 60px auto;
-            padding: 0 20px;
-            flex-grow: 1;
-            width: 100%;
-        }
-
-        .analysis-date-group { margin-bottom: 50px; }
-        
-        .analysis-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-            gap: 30px;
-        }
-
-        .analysis-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .analysis-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.08);
-            border-color: #d1d5db;
-        }
-
-        .analysis-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f3f4f6;
-        }
-
-        .analysis-card-title {
-            font-weight: 700;
-            color: #111827;
-            font-size: 1.1rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 75%;
-        }
-
-        .analysis-status {
-            font-size: 0.85rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-ready { background: #dcfce7; color: #166534; }
-        .status-processing { background: #fef9c3; color: #854d0e; animation: pulse 2s infinite; }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-
-        .image-pair-container {
-            display: flex;
-            gap: 20px;
-        }
-
-        .image-box {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .image-box img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-            background-color: #f9fafb;
-        }
-
-        .image-placeholder {
-            width: 100%;
-            height: 220px;
-            border-radius: 8px;
-            border: 2px dashed #d1d5db;
-            background-color: #f9fafb;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #9ca3af;
-        }
-
-        .image-placeholder .icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .image-label {
-            margin-top: 12px;
-            font-size: 0.95rem;
-            color: #4b5563;
-            font-weight: 600;
-            text-align: center;
-        }
-    </style>
 </head>
 <body class="upload-page-body">
     <header>
         <nav class="navbar navbar-solid">
-            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" style="height: 30px; width: auto;"> <strong>CropGuard AI</strong></div>
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> <strong>CropGuard AI</strong></div>
             <ul class="nav-links">
                 <li><a href="{{ url_for('root') }}">Home</a></li>
                 <li class="dropdown">
@@ -157,7 +40,7 @@
                 <div class="icon">🔬</div>
                 <h3>No analysis results yet</h3>
                 <p>Upload your crop images first to see the segmentation output here. The AI model will automatically process your images in the background.</p>
-                <a href="{{ url_for('upload_image') }}" class="btn-theme-upload" style="text-decoration: none; margin-top: 15px;">
+                <a href="{{ url_for('upload_image') }}" class="btn-theme-upload mt-15 text-decoration-none">
                     Upload Images
                 </a>
             </div>
@@ -169,10 +52,10 @@
                         {% for pair in entry.pairs %}
                         <div class="analysis-card">
                             
-                            <div class="analysis-card-header" style="display: block;">
+                            <div class="analysis-card-header d-block">
                                 
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                                    <div class="analysis-card-title" title="{{ pair.name }}" style="max-width: 65%;">{{ pair.name }}</div>
+                                <div class="analysis-header-top">
+                                    <div class="analysis-card-title analysis-title-mw-65" title="{{ pair.name }}">{{ pair.name }}</div>
                                     {% if pair.mask_link %}
                                         <span class="analysis-status status-ready">Analyzed ✓</span>
                                     {% else %}
@@ -180,9 +63,9 @@
                                     {% endif %}
                                 </div>
                                 
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 1.1rem; flex-shrink: 0;">📍</span>
-                                    <span style="font-size: 0.75rem; color: #6b7280; line-height: 1.5; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ pair.location }}">
+                                <div class="analysis-location-wrapper">
+                                    <span class="analysis-location-icon">📍</span>
+                                    <span class="analysis-location-text" title="{{ pair.location }}">
                                         {{ pair.location }}
                                     </span>
                                 </div>
@@ -218,7 +101,7 @@
         {% endif %}
     </main>
 
-    <footer class="site-footer" style="margin-top: auto;">
+    <footer class="site-footer footer-mt-auto">
         <div class="footer-container">
             <div class="footer-col">
                 <h3>Contact Us</h3>

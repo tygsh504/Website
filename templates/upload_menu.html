@@ -9,7 +9,7 @@
 <body class="upload-page-body">
     <header>
         <nav class="navbar navbar-solid">
-            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" style="height: 30px; width: auto;"> <strong>CropGuard AI</strong></div>
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> <strong>CropGuard AI</strong></div>
             <ul class="nav-links">
                 <li><a href="{{ url_for('root') }}">Home</a></li>
                 <li class="dropdown">
@@ -29,13 +29,13 @@
         </nav>
     </header>
 
-    <main class="upload-container" style="max-width: 900px;">
-        <div class="upload-header" style="text-align: center;">
+    <main class="upload-container upload-container-medium">
+        <div class="upload-header text-center">
             <h2>Choose Action</h2>
             <p>Select your preferred method or view your records</p>
         </div>
 
-        <div class="upload-options-wrapper" style="gap: 30px;">
+        <div class="upload-options-wrapper gap-30">
             <a href="{{ url_for('upload_image') }}" class="upload-card">
                 <div class="icon">📷</div>
                 <h3>Upload Image</h3>

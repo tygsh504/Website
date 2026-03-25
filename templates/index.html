@@ -11,7 +11,7 @@
     <header>
         <nav class="navbar">
             <div class="logo">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" style="height: 30px; width: auto;"> 
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> 
                 <strong>CropGuard AI</strong>
             </div>
             
@@ -54,7 +54,7 @@
                 </p>
 
                 <div class="cta-buttons">
-                    <a href="{{ url_for('upload_menu') }}" class="btn btn-primary cursor-pointer" style="text-decoration: none;">
+                    <a href="{{ url_for('upload_menu') }}" class="btn btn-primary cursor-pointer text-decoration-none">
                         Upload Image
                     </a>
                     
@@ -118,7 +118,7 @@
         <section class="cta-section">
             <h2>Ready to Segment Crop Diseases?</h2>
             <p>Start analyzing your crop images now and contribute to our disease mapping database</p>
-            <a href="{{ url_for('upload_menu') }}" class="btn btn-upload-large" style="text-decoration: none;">
+            <a href="{{ url_for('upload_menu') }}" class="btn btn-upload-large text-decoration-none">
                 Upload Your First Image
             </a>
         </section>

@@ -522,3 +522,294 @@ input[type="checkbox"] {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(34, 197, 94, 0.15);
 }
+
+/* ========================================================= */
+/* --- ANALYSIS PAGE STYLES --- */
+/* ========================================================= */
+
+.analysis-container {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.analysis-date-group { margin-bottom: 50px; }
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 30px;
+}
+
+.analysis-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.analysis-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+    border-color: #d1d5db;
+}
+
+.analysis-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.analysis-card-title {
+    font-weight: 700;
+    color: #111827;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 75%;
+}
+
+.analysis-status {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-ready { background: #dcfce7; color: #166534; }
+.status-processing { background: #fef9c3; color: #854d0e; animation: pulse 2s infinite; }
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.image-pair-container {
+    display: flex;
+    gap: 20px;
+}
+
+.image-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.image-box img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 220px;
+    border-radius: 8px;
+    border: 2px dashed #d1d5db;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+}
+
+.image-placeholder .icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.image-label {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    color: #4b5563;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ========================================================= */
+/* --- DISEASE MAP PAGE STYLES --- */
+/* ========================================================= */
+.map-layout { display: flex; height: calc(100vh - 61px); margin-top: 61px; width: 100%; }
+
+#map { flex: 1; height: 100%; z-index: 1; }
+
+.map-sidebar { 
+    width: 380px; background: white; padding: 25px; overflow-y: auto; 
+    box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 2; display: flex; flex-direction: column;
+}
+
+.map-sidebar h2 { font-size: 1.5rem; color: #111827; margin-bottom: 5px; }
+.map-sidebar p.subtitle { color: #6b7280; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+
+.stat-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center; }
+.stat-box h3 { font-size: 2.2rem; color: #1b332a; margin-bottom: 5px; }
+.stat-box span { font-size: 0.85rem; font-weight: 600; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.stat-box.high-risk { background: #fef2f2; border-color: #fecaca; }
+.stat-box.high-risk h3 { color: #dc2626; }
+.stat-box.high-risk span { color: #991b1b; }
+
+.cluster-card { background: white; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.cluster-card h4 { font-size: 1rem; color: #991b1b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.cluster-card p { font-size: 0.85rem; color: #4b5563; line-height: 1.6; }
+
+/* Custom Map Popup Styling */
+.leaflet-popup-content img { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 10px; }
+.leaflet-popup-content p { margin: 0 0 5px 0; font-size: 0.9rem; color: #374151; font-weight: 600; }
+.leaflet-popup-content a { color: #1b332a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+
+/* Push the zoom controls down away from the navbar */
+.leaflet-top.leaflet-left { margin-top: 25px; }
+
+
+/* ========================================================= */
+/* --- MODAL (UPLOAD IMAGE) STYLES --- */
+/* ========================================================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(17, 24, 39, 0.7); 
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-box {
+    background-color: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-icon { font-size: 3rem; margin-bottom: 15px; }
+.modal-title { font-size: 1.5rem; color: #111827; font-weight: 700; margin-bottom: 10px; }
+.modal-text { color: #4b5563; font-size: 1.05rem; margin-bottom: 30px; line-height: 1.5; }
+.modal-actions { display: flex; justify-content: center; gap: 15px; }
+
+.btn-modal-cancel {
+    background: white;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-modal-cancel:hover { background: #f3f4f6; color: #111827; }
+
+/* ========================================================= */
+/* --- EXTRACTED UTILITY & COMPONENT CLASSES --- */
+/* ========================================================= */
+
+.nav-logo-img { height: 30px; width: auto; }
+.login-logo-img { height: 24px; width: auto; filter: brightness(0) invert(1); }
+.footer-mt-auto { margin-top: auto; }
+.text-decoration-none { text-decoration: none !important; }
+
+.upload-container-wide { max-width: 1000px; }
+.upload-container-medium { max-width: 900px; }
+.text-center { text-align: center; }
+.gap-30 { gap: 30px; }
+
+.analysis-header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.analysis-title-mw-65 { max-width: 65%; }
+.analysis-location-wrapper { display: flex; align-items: center; gap: 8px; }
+.analysis-location-icon { font-size: 1.1rem; flex-shrink: 0; }
+.analysis-location-text { font-size: 0.75rem; color: #6b7280; line-height: 1.5; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.d-block { display: block !important; }
+.mt-15 { margin-top: 15px; }
+
+.navbar-fixed-full { position: fixed; width: 100%; }
+.flex-1 { flex: 1; }
+.sidebar-stats-wrapper { display: flex; gap: 15px; }
+.sidebar-cluster-title { font-size: 1.1rem; color: #111827; margin-top: 10px; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; }
+.cluster-loading-text { font-size: 0.9rem; color: #6b7280; text-align: center; margin-top: 20px; }
+.cluster-empty-text { font-size: 0.9rem; color: #6b7280; text-align: center; }
+.cluster-safe-text { font-size: 0.9rem; color: #166534; text-align: center; background: #dcfce7; padding: 15px; border-radius: 8px; }
+.cluster-coords-text { font-size: 0.8rem; margin-top: 5px; }
+.cluster-date-text { color: #6b7280; font-size: 0.75rem; font-weight: 400; }
+
+.history-location-wrapper { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
+.history-location-icon { font-size: 1.2rem; flex-shrink: 0; }
+.history-location-text { font-size: 0.75rem; color: #6b7280; text-align: left; line-height: 1.5; white-space: nowrap; }
+
+.success-message { background-color: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+.preupload-section-title { font-size: 1.1rem; color: #374151; }
+.th-checkbox { width: 50px; text-align: center; }
+.th-image { width: 70px; }
+.th-action { width: 80px; text-align: center; }
+.upload-form-wrapper { text-align: right; margin-top: 20px; }
+.td-center { text-align: center; }
+.td-location { color: #6b7280; font-size: 0.9rem; }
+.d-none { display: none; }
+
+/* --- MOBILE VIEW (Screens smaller than 768px) --- */
+@media (max-width: 768px) {
+    /* Stack the About section vertically instead of side-by-side */
+    .about-container {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    /* Stack the feature cards vertically */
+    .features-container {
+        flex-direction: column;
+    }
+
+    /* Fix the navigation bar padding and layout */
+    .navbar {
+        padding: 15px 20px;
+    }
+
+    /* Hide the text links on mobile and just show a 'Menu' icon (requires HTML update for a hamburger menu) */
+    .nav-links {
+        display: none; 
+    }
+
+    /* Reduce giant text sizes for mobile screens */
+    .main-title {
+        font-size: 2.5rem;
+    }
+    .sub-title {
+        font-size: 1.8rem;
+    }
+
+    /* Make the login box fit the screen */
+    .login-container {
+        padding: 30px 20px;
+        width: 90%;
+    }
+}
