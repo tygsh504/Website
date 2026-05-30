@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Segmentation Results - CropGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="upload-page-body">
+    <header>
+        <nav class="navbar navbar-solid">
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> <strong>CropGuard AI</strong></div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('root') }}">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('capture_image') }}">Capture Image</a>
+                        <a href="{{ url_for('history') }}">History</a>
+                    </div>
+                </li>
+                <li><a href="{{ url_for('result') }}" class="active">Result</a></li>
+                <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
+            </ul>
+            <div class="user-actions">
+                <span class="user-name">{{ user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn"><span class="icon">⏻</span> Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="analysis-container">
+        <div class="upload-header">
+            <h2>Segmentation Results</h2>
+            <p>Compare original crop images with AI-generated disease masks</p>
+        </div>
+
+        {% if not result_data %}
+            <div class="empty-history">
+                <div class="icon">🔬</div>
+                <h3>No results yet</h3>
+                <p>Upload your crop images first to see the segmentation output here. The AI model will automatically process your images in the background.</p>
+                <a href="{{ url_for('upload_image') }}" class="btn-theme-upload mt-15 text-decoration-none">
+                    Upload Images
+                </a>
+            </div>
+        {% else %}
+            {% for entry in result_data %}
+                <div class="analysis-date-group">
+                    <h3 class="date-divider">📅 {{ entry.date }}</h3>
+                    <div class="analysis-grid">
+                        {% for pair in entry.pairs %}
+                        <div class="analysis-card">
+                            
+                            <div class="analysis-card-header d-block">
+                                
+                                <div class="analysis-header-top">
+                                    <div class="analysis-card-title analysis-title-mw-65" title="{{ pair.name }}">{{ pair.name }}</div>
+                                    {% if pair.mask_link %}
+                                        {% if pair.has_disease %}
+                                            <span class="analysis-status" style="background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;">Infected ❌</span>
+                                        {% else %}
+                                            <span class="analysis-status" style="background: #dcfce7; color: #166534; border: 1px solid #86efac;">Healthy ✓</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="analysis-status status-processing">Processing</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="analysis-location-wrapper">
+                                    <span class="analysis-location-icon">📍</span>
+                                    <span class="analysis-location-text" title="{{ pair.location }}">
+                                        {{ pair.location }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="image-pair-container">
+                                <div class="image-box">
+                                    <a href="{{ pair.ori_view_link }}" target="_blank" title="View Full Image">
+                                        <img src="{{ pair.ori_link }}" alt="Original Image">
+                                    </a>
+                                    <div class="image-label">Original Crop</div>
+                                </div>
+                                
+                                <div class="image-box">
+                                    {% if pair.mask_link %}
+                                        {% if pair.has_disease %}
+                                            <a href="{{ pair.mask_view_link }}" target="_blank" title="View Full Mask">
+                                                <img src="{{ pair.mask_link }}" alt="Predicted Mask">
+                                            </a>
+                                        {% else %}
+                                            <div class="image-placeholder" style="border-color: #22c55e; background-color: #f0fdf4; color: #166534;">
+                                                <div class="icon" style="font-size: 2.5rem;">🌿</div>
+                                                <span style="font-weight: 600;">No Disease</span>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="image-placeholder">
+                                            <div class="icon">⚙️</div>
+                                            <span>Generating Mask...</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="image-label">Disease Mask</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </main>
+
+    <footer class="site-footer footer-mt-auto">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Contact Us</h3>
+                <div class="contact-person">
+                    <h4>Tong Yong Shen</h4>
+                    <p>📞 +60 11 2048 5425</p>
+                    <p>📩 tygsh504@gmail.com</p>
+                    <p>🎓 2200458@siswa.um.edu.my</p>
+                </div>
+                <div class="contact-person">
+                    <h4>Associate Prof. Ir. Dr. Norrima binti Mokhtar</h4>
+                    <p>📞 +60 10 245 5060</p>
+                    <p>📩 norrimamokhtar@um.edu.my</p>
+                </div>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Navigation</h3>
+                <ul class="footer-nav">
+                    <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
+                    <li><a href="{{ url_for('capture_image') }}">Capture Image</a></li>
+                    <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
+                    <li><a href="{{ url_for('result') }}">Result</a></li>
+                    <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Location</h3>
+                <div class="location-info">
+                    <h4>ACRLAB</h4>
+                    <p>Department of Electrical Engineering</p>
+                    <p>Universiti Malaya</p>
+                    <p>50603 Lembah Pantai</p>
+                    <p>Kuala Lumpur, Malaysia</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="https://github.com/tygsh504" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/yong-shen-tong-abbb4032b/">LinkedIn</a>
+                <a href="mailto:tygsh504@gmail.com">Email</a>
+            </div>
+            <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -20,6 +20,7 @@
                         <a href="{{ url_for('history') }}">History</a>
                     </div>
                 </li>
+                <li><a href="{{ url_for('result') }}">Result</a></li>
                 <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
                 <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
             </ul>
@@ -104,6 +105,56 @@
             </div>
         </div>
     </div>
+
+    <footer class="site-footer footer-mt-auto">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Contact Us</h3>
+                <div class="contact-person">
+                    <h4>Tong Yong Shen</h4>
+                    <p>📞 +60 11 2048 5425</p>
+                    <p>📩 tygsh504@gmail.com</p>
+                    <p>🎓 2200458@siswa.um.edu.my</p>
+                </div>
+                <div class="contact-person">
+                    <h4>Associate Prof. Ir. Dr. Norrima binti Mokhtar</h4>
+                    <p>📞 +60 10 245 5060</p>
+                    <p>📩 norrimamokhtar@um.edu.my</p>
+                </div>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Navigation</h3>
+                <ul class="footer-nav">
+                    <li><a href="{{ url_for('upload_menu') }}">Upload Image</a></li>
+                    <li><a href="{{ url_for('capture_image') }}">Capture Image</a></li>
+                    <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
+                    <li><a href="{{ url_for('result') }}">Result</a></li>
+                    <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Location</h3>
+                <div class="location-info">
+                    <h4>ACRLAB</h4>
+                    <p>Department of Electrical Engineering</p>
+                    <p>Universiti Malaya</p>
+                    <p>50603 Lembah Pantai</p>
+                    <p>Kuala Lumpur, Malaysia</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="https://github.com/tygsh504" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/yong-shen-tong-abbb4032b/">LinkedIn</a>
+                <a href="mailto:tygsh504@gmail.com">Email</a>
+            </div>
+            <p class="copyright">© 2026 Crop Disease Segmentation Project</p>
+        </div>
+    </footer>
 
     <script>
         // Camera Variables

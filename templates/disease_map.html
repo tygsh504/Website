@@ -7,6 +7,137 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+
+    <style>
+        /* Toolbar Layout Enhancements */
+        .leaflet-left .leaflet-control { 
+            margin-left: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important;
+            border: none !important;
+            border-radius: 6px !important;
+            overflow: hidden;
+        }
+        
+        .leaflet-bar a {
+            width: 34px !important;
+            height: 34px !important;
+            line-height: 34px !important;
+            background-color: #ffffff;
+            color: #374151;
+            transition: all 0.2s;
+        }
+        
+        .leaflet-bar a:hover { background-color: #f3f4f6; }
+        
+        /* Make Leaflet Draw tools larger and visible */
+        .leaflet-draw {
+            transform: scale(1.4);
+            transform-origin: top left;
+            margin-top: 15px !important;
+        }
+
+        /* Custom Button Visibility & Cleanup */
+        #btn-delete, #btn-undo, #btn-redo {
+            background-image: none !important; 
+            text-indent: 0 !important; 
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 16px !important;
+        }
+
+        #btn-delete { background-color: #fff1f2 !important; }
+        #btn-delete:hover { background-color: #ffe4e6 !important; }
+
+        #btn-undo, #btn-redo { background-color: #eff6ff !important; }
+        #btn-undo:hover, #btn-redo:hover { background-color: #dbeafe !important; }
+
+        .active-delete { 
+            background-color: #fecaca !important; 
+            border: 2px solid #ef4444 !important; 
+            box-sizing: border-box !important;
+        }
+
+        /* Floating Region Stats Panel inside the map */
+        #floating-region-stats {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border: 2px solid #3b82f6;
+            min-width: 220px;
+            text-align: center;
+        }
+
+        /* Custom Search Bar Styles */
+        .custom-search-bar {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border: 1px solid #d1d5db;
+        }
+
+        #location-search-input {
+            border: none;
+            outline: none;
+            padding: 10px 15px;
+            width: 240px;
+            font-size: 0.95rem;
+            color: #374151;
+        }
+
+        #location-search-input::placeholder { color: #9ca3af; }
+
+        #location-search-btn {
+            border: none;
+            background: white;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-left: 1px solid #e5e7eb;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        #location-search-btn:hover { background: #f3f4f6; }
+
+        /* Tooltip Pointer */
+        #drawing-tooltip {
+            position: absolute;
+            top: 105px; 
+            left: 70px; 
+            z-index: 2000; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25); 
+            width: 260px; 
+            border-left: 4px solid #3b82f6;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tooltip-arrow {
+            position: absolute; 
+            left: -12px; 
+            top: 25px; 
+            width: 0; 
+            height: 0; 
+            border-top: 10px solid transparent; 
+            border-bottom: 10px solid transparent; 
+            border-right: 12px solid #3b82f6;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
 </head>
 <body class="upload-page-body">
     <header>
@@ -22,6 +153,7 @@
                         <a href="{{ url_for('history') }}">History</a>
                     </div>
                 </li>
+                <li><a href="{{ url_for('result') }}">Result</a></li>
                 <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
                 <li><a href="{{ url_for('disease_map') }}" class="active">Disease Map</a></li>
             </ul>
@@ -59,139 +191,391 @@
             </div>
         </div>
 
-        <div id="map"></div>
+        <div id="map" style="position: relative;">
+            
+            <div id="drawing-tooltip">
+                <div class="tooltip-arrow"></div>
+                <h4 style="margin: 0 0 5px 0; font-size: 1.05rem; color: #111827;">New: Region Analysis</h4>
+                <p style="margin: 0 0 12px 0; font-size: 0.85rem; color: #4b5563; line-height: 1.5;">Draw regions on the map to count the exact number of diseases inside. You can draw multiple shapes at once!</p>
+                <button onclick="document.getElementById('drawing-tooltip').style.display='none'" style="background: #3b82f6; color: white; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; width: 100%; font-weight: 600;">Got it</button>
+            </div>
+
+            <div id="floating-region-stats" style="display: none;">
+                <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: #111827;">Region Analysis</h3>
+                <div style="font-size: 3rem; font-weight: 800; color: #3b82f6; line-height: 1;" id="region-case-count">0</div>
+                <div style="font-size: 0.85rem; color: #6b7280; font-weight: 700; text-transform: uppercase; margin-top: 8px;">Infections Found</div>
+            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     
     <script>
         // Data injected from Flask
         const rawData = {{ map_data | tojson }};
         
-        // Settings for Analysis
-        const CLUSTER_RADIUS = 30; // meters (Distance to group markers)
-        const HIGH_THRESHOLD = 4; // 4 or more cases in radius
-        const MEDIUM_THRESHOLD = 2; // 2-3 cases in radius
+        // Settings for Severity Thresholds at a single location
+        const HIGH_THRESHOLD = 4;
+        const MEDIUM_THRESHOLD = 2;
         
         // Initialize Map
         const map = L.map('map', { attributionControl: false }).setView([4.2105, 101.9758], 6);
         
-        // Add OpenStreetMap Tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
-        }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         
-        // Haversine formula to calculate distance between two coordinates in meters
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Earth radius in meters
-            const p1 = lat1 * Math.PI/180;
-            const p2 = lat2 * Math.PI/180;
-            const dp = (lat2-lat1) * Math.PI/180;
-            const dl = (lon2-lon1) * Math.PI/180;
-            const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
+        // --- ADD CUSTOM SEARCH BAR ---
+        var searchControl = L.control({position: 'topright'});
+        searchControl.onAdd = function() {
+            var div = L.DomUtil.create('div', 'custom-search-bar leaflet-control');
+            div.innerHTML = `
+                <input type="text" id="location-search-input" placeholder="Search name or GPS (Lat, Lon)">
+                <button id="location-search-btn" title="Search Location">🔍</button>
+            `;
+            
+            // Prevent map dragging or clicking when interacting with the search bar
+            L.DomEvent.disableClickPropagation(div);
+            L.DomEvent.disableScrollPropagation(div);
+            
+            return div;
+        };
+        searchControl.addTo(map);
+
+        // Search Logic
+        function performSearch() {
+            const query = document.getElementById('location-search-input').value.trim();
+            if (!query) return;
+
+            const btn = document.getElementById('location-search-btn');
+            
+            // Regex to check if the user entered GPS coordinates e.g. "4.21, 101.97" or "4.21 101.97"
+            const gpsRegex = /^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/;
+            const match = query.match(gpsRegex);
+
+            if (match) {
+                // User searched by GPS
+                const lat = parseFloat(match[1]);
+                const lon = parseFloat(match[3]);
+                map.flyTo([lat, lon], 14);
+                
+                L.popup().setLatLng([lat, lon]).setContent("<b>Searched GPS</b><br>" + lat + ", " + lon).openOn(map);
+            } else {
+                // User searched by Name, use OpenStreetMap Nominatim API
+                btn.innerHTML = '⏳';
+                
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        btn.innerHTML = '🔍';
+                        if (data && data.length > 0) {
+                            const lat = parseFloat(data[0].lat);
+                            const lon = parseFloat(data[0].lon);
+                            
+                            // Calculate bounds if provided, otherwise fly to point
+                            if (data[0].boundingbox) {
+                                const bb = data[0].boundingbox;
+                                map.flyToBounds([[bb[0], bb[2]], [bb[1], bb[3]]]);
+                            } else {
+                                map.flyTo([lat, lon], 13);
+                            }
+                            
+                            L.popup().setLatLng([lat, lon]).setContent(`<b>Location Found</b><br>${data[0].display_name}`).openOn(map);
+                        } else {
+                            alert("Location not found. Try a different name or use GPS coordinates.");
+                        }
+                    })
+                    .catch(err => {
+                        btn.innerHTML = '🔍';
+                        console.error("Geocoding error:", err);
+                        alert("Error contacting the search service.");
+                    });
+            }
         }
 
-        // Custom Colored Icons
-        const redIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
-        const orangeIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
-        const yellowIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
+        // Attach Search Events
+        setTimeout(() => {
+            document.getElementById('location-search-btn').addEventListener('click', performSearch);
+            document.getElementById('location-search-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') performSearch();
+            });
+        }, 100);
+
+        // --- END SEARCH BAR LOGIC ---
+
+        // Icons
+        const redIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]});
+        const orangeIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]});
+        const yellowIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]});
 
         document.getElementById('total-scans').innerText = rawData.length;
         
-        // Run Clustering Algorithm
-        let visited = new Set();
-        let clusters = [];
-        
-        rawData.forEach((point, i) => {
-            if (visited.has(i)) return;
-            let currentCluster = [point];
-            visited.add(i);
-            
-            rawData.forEach((otherPoint, j) => {
-                if (i !== j && !visited.has(j)) {
-                    let distance = getDistance(point.lat, point.lon, otherPoint.lat, otherPoint.lon);
-                    if (distance <= CLUSTER_RADIUS) {
-                        currentCluster.push(otherPoint);
-                        visited.add(j);
-                    }
-                }
-            });
-            clusters.push(currentCluster);
+        // Group exact locations
+        const locationGroups = {};
+        rawData.forEach(point => {
+            const key = `${point.lat},${point.lon}`;
+            if (!locationGroups[key]) locationGroups[key] = { lat: point.lat, lon: point.lon, points: [] };
+            locationGroups[key].points.push(point);
         });
 
-        // Map rendering variables
-        let bounds = [];
-        let highCases = 0, mediumCases = 0, lowCases = 0;
+        let bounds = [], highCases = 0, mediumCases = 0, lowCases = 0;
 
-        clusters.forEach((cluster) => {
-            let size = cluster.length;
-            let iconToUse, circleColor;
+        // Plot exact location markers
+        Object.values(locationGroups).forEach((group) => {
+            let size = group.points.length;
+            let iconToUse;
             
-            if (size >= HIGH_THRESHOLD) {
-                iconToUse = redIcon;
-                circleColor = '#dc2626'; // Red
-                highCases += size;
-            } else if (size >= MEDIUM_THRESHOLD) {
-                iconToUse = orangeIcon;
-                circleColor = '#f97316'; // Orange
-                mediumCases += size;
-            } else {
-                iconToUse = yellowIcon;
-                circleColor = '#eab308'; // Yellow
-                lowCases += size;
-            }
+            if (size >= HIGH_THRESHOLD) { iconToUse = redIcon; highCases += size; } 
+            else if (size >= MEDIUM_THRESHOLD) { iconToUse = orangeIcon; mediumCases += size; } 
+            else { iconToUse = yellowIcon; lowCases += size; }
             
-            // Draw a warning circle for grouped clusters (Medium and High)
-            if (size >= MEDIUM_THRESHOLD) {
-                let centerLat = cluster.reduce((sum, p) => sum + p.lat, 0) / size;
-                let centerLon = cluster.reduce((sum, p) => sum + p.lon, 0) / size;
+            let marker = L.marker([group.lat, group.lon], { icon: iconToUse }).addTo(map);
+            
+            let popupHtml = `<div style="max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;">
+                <h4 style="margin: 0 0 10px 0; color: #111827;">Severity: ${size} Cases</h4>`;
                 
-                L.circle([centerLat, centerLon], {
-                    color: circleColor,
-                    fillColor: circleColor,
-                    fillOpacity: 0.2,
-                    radius: CLUSTER_RADIUS
-                }).addTo(map);
-            }
-            
-            // Plot individual markers with respective color
-            cluster.forEach(point => {
-                let marker = L.marker([point.lat, point.lon], { icon: iconToUse }).addTo(map);
-                
-                // Add popup
-                marker.bindPopup(`
-                    <img src="${point.thumbnail}" alt="Crop Scan">
-                    <p>${point.name}</p>
-                    <p class="cluster-date-text">Date: ${point.date}</p>
-                    <a href="${point.link}" target="_blank">Open inside Drive ➔</a>
-                `);
-                bounds.push([point.lat, point.lon]);
+            group.points.forEach(p => {
+                popupHtml += `<div style="margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+                        <img src="${p.thumbnail}" alt="Crop Scan" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 5px;">
+                        <p style="margin: 0 0 3px 0; font-size: 0.9rem; color: #374151; font-weight: 600;">${p.name}</p>
+                        <p style="margin: 0 0 5px 0; color: #6b7280; font-size: 0.75rem;">Date: ${p.date}</p>
+                        <a href="${p.link}" target="_blank" style="color: #1b332a; font-weight: 600; text-decoration: none; font-size: 0.85rem;">Open inside Drive ➔</a>
+                    </div>`;
             });
+            popupHtml += `</div>`;
+            
+            marker.bindPopup(popupHtml);
+            bounds.push([group.lat, group.lon]);
         });
 
-        // Update UI
         document.getElementById('high-risk-count').innerText = highCases;
         document.getElementById('medium-risk-count').innerText = mediumCases;
         document.getElementById('low-risk-count').innerText = lowCases;
 
-        // Adjust map to show all pins
-        if (bounds.length > 0) {
-            map.fitBounds(bounds, { padding: [50, 50] });
+        if (bounds.length > 0) map.fitBounds(bounds, { padding: [50, 50] });
+
+        // --- DRAWING TOOL, HISTORY & REGION ANALYSIS ---
+
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        // Native Draw Control
+        var drawControl = new L.Control.Draw({
+            draw: { 
+                polyline: false, 
+                polygon: {
+                    shapeOptions: {
+                        color: '#3b82f6',
+                        fill: true,
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.2,
+                        interactive: true 
+                    }
+                }, 
+                circle: false, 
+                rectangle: {
+                    shapeOptions: {
+                        color: '#3b82f6',
+                        fill: true,
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.2,
+                        interactive: true 
+                    }
+                }, 
+                marker: false, 
+                circlemarker: false 
+            },
+            edit: false 
+        });
+        map.addControl(drawControl);
+
+        // Merge custom tools directly into the Leaflet Draw toolbar container
+        var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
+        if (drawToolbar) {
+            // Delete Button
+            var btnDelete = document.createElement('a');
+            btnDelete.href = "#";
+            btnDelete.id = "btn-delete";
+            btnDelete.title = "Delete Region (Toggle then click shape)";
+            btnDelete.innerHTML = "🗑️";
+            
+            // Undo Button
+            var btnUndo = document.createElement('a');
+            btnUndo.href = "#";
+            btnUndo.id = "btn-undo";
+            btnUndo.title = "Undo (Ctrl+Z)";
+            btnUndo.innerHTML = "↩️";
+            btnUndo.style.opacity = "0.4";
+            
+            // Redo Button
+            var btnRedo = document.createElement('a');
+            btnRedo.href = "#";
+            btnRedo.id = "btn-redo";
+            btnRedo.title = "Redo (Ctrl+Y)";
+            btnRedo.innerHTML = "↪️";
+            btnRedo.style.opacity = "0.4";
+
+            drawToolbar.appendChild(btnDelete);
+            drawToolbar.appendChild(btnUndo);
+            drawToolbar.appendChild(btnRedo);
         }
+
+        // History Stacks
+        let historyStack = [];
+        let redoStack = [];
+
+        function updateUndoRedoUI() {
+            document.getElementById('btn-undo').style.opacity = historyStack.length > 0 ? '1' : '0.4';
+            document.getElementById('btn-redo').style.opacity = redoStack.length > 0 ? '1' : '0.4';
+        }
+
+        function pushAction(type, layer) {
+            historyStack.push({ type: type, layer: layer });
+            redoStack = []; 
+            updateUndoRedoUI();
+        }
+
+        function undo() {
+            if (historyStack.length === 0) return;
+            let action = historyStack.pop();
+            if (action.type === 'add') drawnItems.removeLayer(action.layer);
+            else if (action.type === 'remove') drawnItems.addLayer(action.layer);
+            redoStack.push(action);
+            recalculateRegion();
+            updateUndoRedoUI();
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            let action = redoStack.pop();
+            if (action.type === 'add') drawnItems.addLayer(action.layer);
+            else if (action.type === 'remove') drawnItems.removeLayer(action.layer);
+            historyStack.push(action);
+            recalculateRegion();
+            updateUndoRedoUI();
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); undo(); }
+            if (e.ctrlKey && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); redo(); }
+        });
+
+        // Toggle Delete Mode
+        let deleteMode = false;
+        
+        function toggleDeleteMode() {
+            deleteMode = !deleteMode;
+            var btn = document.getElementById('btn-delete');
+            if (deleteMode) {
+                btn.classList.add('active-delete');
+                map._container.style.cursor = 'crosshair';
+            } else {
+                btn.classList.remove('active-delete');
+                map._container.style.cursor = '';
+            }
+            updateLayerCursors();
+        }
+
+        document.getElementById('btn-delete').onclick = function(e) {
+            e.preventDefault();
+            toggleDeleteMode();
+        };
+
+        // Automatically disable delete mode when a drawing tool is activated
+        map.on('draw:drawstart', function (e) {
+            if (deleteMode) {
+                toggleDeleteMode();
+            }
+        });
+
+        // Set cursor styling on SVGs so the user sees it's clickable during deleteMode
+        function updateLayerCursors() {
+            drawnItems.eachLayer(function(layer) {
+                if (layer.getElement) {
+                    layer.getElement().style.cursor = deleteMode ? 'crosshair' : '';
+                } else if (layer._path) {
+                    layer._path.style.cursor = deleteMode ? 'crosshair' : '';
+                }
+            });
+        }
+
+        // Click on drawn item while deleteMode is active
+        function onLayerClick(e) {
+            if (deleteMode) {
+                L.DomEvent.stopPropagation(e); // Prevent the click from propagating to the map
+                var layer = e.target;
+                drawnItems.removeLayer(layer);
+                pushAction('remove', layer);
+                recalculateRegion();
+            }
+        }
+
+        // Ray-casting algorithm
+        function isPointInPolygon(point, vs) {
+            var x = point[0], y = point[1]; 
+            var inside = false;
+            for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                var xi = vs[i][0], yi = vs[i][1];
+                var xj = vs[j][0], yj = vs[j][1];
+                var intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
+
+        // Calculate all shapes together
+        function recalculateRegion() {
+            let uniqueCasesInRegions = new Set();
+            let hasActiveLayers = false;
+
+            drawnItems.eachLayer(function(layer) {
+                hasActiveLayers = true;
+                var geojson = layer.toGeoJSON();
+                var polygonCoords = geojson.geometry.coordinates[0]; 
+
+                Object.entries(locationGroups).forEach(([key, group]) => {
+                    let testPoint = [group.lon, group.lat];
+                    if (isPointInPolygon(testPoint, polygonCoords)) {
+                        uniqueCasesInRegions.add(key); // Use exact location key so overlaps don't double count
+                    }
+                });
+            });
+
+            if (hasActiveLayers) {
+                let totalCases = 0;
+                uniqueCasesInRegions.forEach(key => {
+                    totalCases += locationGroups[key].points.length;
+                });
+                
+                document.getElementById('floating-region-stats').style.display = 'block';
+                document.getElementById('region-case-count').innerText = totalCases;
+            } else {
+                document.getElementById('floating-region-stats').style.display = 'none';
+            }
+        }
+
+        // Triggers when a new drawing is added
+        map.on(L.Draw.Event.CREATED, function (e) {
+            var layer = e.layer;
+            
+            // Bind the click event to both the edge and interior of the layer
+            layer.on('click', onLayerClick); 
+            
+            drawnItems.addLayer(layer);
+            pushAction('add', layer);
+            recalculateRegion();
+            
+            // Ensure the new layer adopts the crosshair cursor if we are currently in delete mode
+            updateLayerCursors();
+            
+            // Hide the tooltip once they use the feature
+            document.getElementById('drawing-tooltip').style.display = 'none';
+        });
+
+        // Add listeners to Undo/Redo buttons
+        document.getElementById('btn-undo').addEventListener('click', function(e) { e.preventDefault(); undo(); });
+        document.getElementById('btn-redo').addEventListener('click', function(e) { e.preventDefault(); redo(); });
+
     </script>
 </body>
 </html>

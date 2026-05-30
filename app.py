@@ -225,8 +225,8 @@ def history():
     history_data.sort(key=lambda x: x['date'], reverse=True)
     return render_template('history.html', history_data=history_data, user_name=session.get('user_name'))
 
-@app.route('/analysis')
-def analysis():
+@app.route('/result')
+def result():
     if 'user' not in session:
         return redirect(url_for('login'))
     
@@ -236,7 +236,7 @@ def analysis():
     query = f"'{session['user_folder_id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     folders = service.files().list(q=query, fields="files(id, name)").execute().get('files', [])
     
-    analysis_data = []
+    result_data = []
     for folder in folders:
         # Look for the 'ori_image' and 'predicted_mask' folders within the date folder
         ori_query = f"name = 'ori_image' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -259,7 +259,7 @@ def analysis():
         mask_files = []
         if mask_folder_id:
             mask_files_query = f"'{mask_folder_id}' in parents and trashed = false"
-            mask_files = service.files().list(q=mask_files_query, fields="files(id, name, thumbnailLink, webViewLink)").execute().get('files', [])
+            mask_files = service.files().list(q=mask_files_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
             
         mask_dict = {}
         for mask in mask_files:
@@ -273,21 +273,122 @@ def analysis():
             base_name = os.path.splitext(ori['name'])[0]
             matched_mask = mask_dict.get(base_name)
             
+            has_disease = True
+            if matched_mask and matched_mask.get('description') == 'No Disease':
+                has_disease = False
+            
             pairs.append({
                 'name': ori['name'],
                 'location': ori.get('description', 'No location data'), # Retrieve the unique location
                 'ori_link': ori.get('thumbnailLink'),
                 'ori_view_link': ori.get('webViewLink'),
                 'mask_link': matched_mask.get('thumbnailLink') if matched_mask else None,
-                'mask_view_link': matched_mask.get('webViewLink') if matched_mask else None
+                'mask_view_link': matched_mask.get('webViewLink') if matched_mask else None,
+                'has_disease': has_disease
             })
             
         if pairs:
-            analysis_data.append({'date': folder['name'], 'pairs': pairs})
+            result_data.append({'date': folder['name'], 'pairs': pairs})
     
-    analysis_data.sort(key=lambda x: x['date'], reverse=True)
+    result_data.sort(key=lambda x: x['date'], reverse=True)
     
-    return render_template('analysis.html', analysis_data=analysis_data, user_name=session.get('user_name'))
+    return render_template('result.html', result_data=result_data, user_name=session.get('user_name'))
+
+@app.route('/analysis')
+def analysis():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    service = get_drive_service()
+    
+    query = f"'{session['user_folder_id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    folders = service.files().list(q=query, fields="files(id, name)").execute().get('files', [])
+    
+    timeline_data = {}
+    cluster_data = {}
+    
+    total_images = 0
+    total_diseased = 0
+    total_healthy = 0
+    total_processing = 0
+    
+    for folder in folders:
+        date_str = folder['name']
+        if date_str not in timeline_data:
+            timeline_data[date_str] = {'diseased': 0, 'healthy': 0, 'processing': 0}
+            
+        ori_query = f"name = 'ori_image' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        mask_query = f"name = 'predicted_mask' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        
+        ori_folders = service.files().list(q=ori_query, fields="files(id, name)").execute().get('files', [])
+        mask_folders = service.files().list(q=mask_query, fields="files(id, name)").execute().get('files', [])
+        
+        if not ori_folders:
+            continue
+            
+        ori_folder_id = ori_folders[0]['id']
+        mask_folder_id = mask_folders[0]['id'] if mask_folders else None
+        
+        file_query = f"'{ori_folder_id}' in parents and trashed = false"
+        ori_files = service.files().list(q=file_query, fields="files(id, name, description)").execute().get('files', [])
+        
+        mask_dict = {}
+        if mask_folder_id:
+            mask_files_query = f"'{mask_folder_id}' in parents and trashed = false"
+            mask_files = service.files().list(q=mask_files_query, fields="files(id, name, description)").execute().get('files', [])
+            for mask in mask_files:
+                base_name = os.path.splitext(mask['name'])[0]
+                if base_name.startswith('mask_'):
+                    base_name = base_name[5:]
+                mask_dict[base_name] = mask
+
+        for ori in ori_files:
+            total_images += 1
+            base_name = os.path.splitext(ori['name'])[0]
+            matched_mask = mask_dict.get(base_name)
+            
+            desc = ori.get('description', '')
+            coords = re.findall(r"[-+]?\d*\.\d+|\d+", desc)
+            cluster_name = "Unknown Location"
+            lat = 0.0
+            lon = 0.0
+            if len(coords) >= 2:
+                try:
+                    lat = float(coords[0])
+                    lon = float(coords[1])
+                    if lat != 0.0 and lon != 0.0:
+                        cluster_name = f"{round(lat, 2)}, {round(lon, 2)}"
+                except ValueError:
+                    pass
+            
+            if cluster_name not in cluster_data:
+                cluster_data[cluster_name] = {'lat': lat, 'lon': lon, 'diseased': 0, 'healthy': 0, 'processing': 0, 'total': 0}
+            
+            cluster_data[cluster_name]['total'] += 1
+            
+            if not matched_mask:
+                timeline_data[date_str]['processing'] += 1
+                cluster_data[cluster_name]['processing'] += 1
+                total_processing += 1
+            elif matched_mask.get('description') == 'No Disease':
+                timeline_data[date_str]['healthy'] += 1
+                cluster_data[cluster_name]['healthy'] += 1
+                total_healthy += 1
+            else:
+                timeline_data[date_str]['diseased'] += 1
+                cluster_data[cluster_name]['diseased'] += 1
+                total_diseased += 1
+
+    analysis_summary = {
+        'total_images': total_images,
+        'total_diseased': total_diseased,
+        'total_healthy': total_healthy,
+        'total_processing': total_processing,
+        'timeline': timeline_data,
+        'clusters': cluster_data
+    }
+    
+    return render_template('analysis.html', analysis_summary=analysis_summary, user_name=session.get('user_name'))
 
 @app.route('/disease_map')
 def disease_map():
@@ -308,10 +409,28 @@ def disease_map():
         ori_folders = service.files().list(q=subfolder_query, fields="files(id, name)").execute().get('files', [])
         
         for ori_folder in ori_folders:
+            # Also get mask folder to check disease status
+            mask_query = f"name = 'predicted_mask' and '{folder['id']}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+            mask_folders = service.files().list(q=mask_query, fields="files(id, name)").execute().get('files', [])
+            mask_dict = {}
+            if mask_folders:
+                mask_files_query = f"'{mask_folders[0]['id']}' in parents and trashed = false"
+                mask_files = service.files().list(q=mask_files_query, fields="files(id, name, description)").execute().get('files', [])
+                for mask in mask_files:
+                    base_name = os.path.splitext(mask['name'])[0]
+                    if base_name.startswith('mask_'):
+                        base_name = base_name[5:]
+                    mask_dict[base_name] = mask
+
             file_query = f"'{ori_folder['id']}' in parents and trashed = false"
             files = service.files().list(q=file_query, fields="files(id, name, thumbnailLink, webViewLink, description)").execute().get('files', [])
             
             for file in files:
+                base_name = os.path.splitext(file['name'])[0]
+                matched_mask = mask_dict.get(base_name)
+                if matched_mask and matched_mask.get('description') == 'No Disease':
+                    continue
+
                 desc = file.get('description', '')
                 # Extract coordinates safely using regex
                 coords = re.findall(r"[-+]?\d*\.\d+|\d+", desc)

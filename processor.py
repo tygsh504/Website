@@ -127,13 +127,16 @@ def process_and_upload(file_id, file_name, parent_id):
         # Save to temporary file
         temp_mask_path = 'temp_mask.png'
         mask_img.save(temp_mask_path)
+        
+        has_disease = bool(pred_mask.max() > 0)
+        disease_status = 'Disease Detected' if has_disease else 'No Disease'
 
         # Upload Mask back to Google Drive
         mask_name = f"{os.path.splitext(file_name)[0]}.png"
         file_metadata = {
             'name': mask_name,
             'parents': [parent_id],
-            'description': 'AI Segmentation Output'
+            'description': disease_status
         }
         
         media = MediaFileUpload(temp_mask_path, mimetype='image/png')
