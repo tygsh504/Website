@@ -85,7 +85,7 @@ def get_drive_service():
             'service_account.json', scopes=SCOPES
         )
         
-    return build('drive', 'v3', credentials=creds)
+    return build('drive', 'v3', credentials=creds, static_discovery=False, cache_discovery=False)
 
 def get_or_create_folder(name, parent_id):
     service = get_drive_service()
