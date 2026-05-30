@@ -70,7 +70,7 @@ DATABASE_FOLDER_ID = '1fHZKA6JMf1cJyxWM8dGEEBAPmxyQiDJY'
 def get_drive_service():
     # 1. Try to load from Vercel Environment Variable
     creds_json_str = os.environ.get('GOOGLE_OAUTH_TOKEN_JSON')
-    
+
     if creds_json_str:
         # We are on Vercel
         creds_info = json.loads(creds_json_str)
@@ -79,9 +79,9 @@ def get_drive_service():
         # 2. Fallback for Local Development
         if not os.path.exists('token.json'):
             raise ValueError("No Google Credentials found! Missing token.json or GOOGLE_OAUTH_TOKEN_JSON env var.")
-        
+
         creds = Credentials.from_authorized_user_file('token.json', scopes=SCOPES)
-        
+
     return build('drive', 'v3', credentials=creds, static_discovery=False, cache_discovery=False)
 
 def get_or_create_folder(name, parent_id):
