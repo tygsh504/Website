@@ -17,6 +17,7 @@ from supabase import create_client
 
 # Google API Libraries
 import json
+from google.oauth2.credentials import Credentials
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -68,22 +69,18 @@ DATABASE_FOLDER_ID = '1fHZKA6JMf1cJyxWM8dGEEBAPmxyQiDJY'
 
 def get_drive_service():
     # 1. Try to load from Vercel Environment Variable
-    creds_json_str = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    creds_json_str = os.environ.get('GOOGLE_OAUTH_TOKEN_JSON')
     
     if creds_json_str:
         # We are on Vercel
         creds_info = json.loads(creds_json_str)
-        creds = service_account.Credentials.from_service_account_info(
-            creds_info, scopes=SCOPES
-        )
+        creds = Credentials.from_authorized_user_info(creds_info, scopes=SCOPES)
     else:
         # 2. Fallback for Local Development
-        if not os.path.exists('service_account.json'):
-            raise ValueError("No Google Credentials found! Missing service_account.json or GOOGLE_CREDENTIALS_JSON env var.")
+        if not os.path.exists('token.json'):
+            raise ValueError("No Google Credentials found! Missing token.json or GOOGLE_OAUTH_TOKEN_JSON env var.")
         
-        creds = service_account.Credentials.from_service_account_file(
-            'service_account.json', scopes=SCOPES
-        )
+        creds = Credentials.from_authorized_user_file('token.json', scopes=SCOPES)
         
     return build('drive', 'v3', credentials=creds, static_discovery=False, cache_discovery=False)
 
