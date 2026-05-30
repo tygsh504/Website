@@ -28,8 +28,10 @@ app = Flask(__name__)
 app.secret_key = "cropguard_super_secret_key"
 
 # --- Supabase Configuration ---
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+# SUPABASE_URL = os.environ.get("SUPABASE_URL")
+# SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().replace('"', '').replace("'", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip().replace('"', '').replace("'", "")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Supabase URL and Key must be set in environment variables.")
