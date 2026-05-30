@@ -9,9 +9,15 @@ from dotenv import load_dotenv
 from supabase import create_client
 
 # Google API Libraries
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+# from google.auth.transport.requests import Request
+# from google.oauth2.credentials import Credentials
+# from google_auth_oauthlib.flow import InstalledAppFlow
+# from googleapiclient.discovery import build
+# from googleapiclient.http import MediaIoBaseUpload
+
+# Google API Libraries
+import json
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
@@ -34,28 +40,49 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata.readonly']
 DATABASE_FOLDER_ID = '1fHZKA6JMf1cJyxWM8dGEEBAPmxyQiDJY' 
 
-def get_drive_service():
-    creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+# def get_drive_service():
+#     creds = None
+#     if os.path.exists('token.json'):
+#         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            try:
-                creds.refresh(Request())
-            except Exception as e:
-                print(f"Failed to refresh token: {e}. Re-authenticating...")
-                creds = None
-                if os.path.exists('token.json'):
-                    os.remove('token.json')
+#     if not creds or not creds.valid:
+#         if creds and creds.expired and creds.refresh_token:
+#             try:
+#                 creds.refresh(Request())
+#             except Exception as e:
+#                 print(f"Failed to refresh token: {e}. Re-authenticating...")
+#                 creds = None
+#                 if os.path.exists('token.json'):
+#                     os.remove('token.json')
         
-        if not creds or not creds.valid:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+#         if not creds or not creds.valid:
+#             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+#             creds = flow.run_local_server(port=0)
         
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+#         with open('token.json', 'w') as token:
+#             token.write(creds.to_json())
 
+#     return build('drive', 'v3', credentials=creds)
+
+def get_drive_service():
+    # 1. Try to load from Vercel Environment Variable
+    creds_json_str = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    
+    if creds_json_str:
+        # We are on Vercel
+        creds_info = json.loads(creds_json_str)
+        creds = service_account.Credentials.from_service_account_info(
+            creds_info, scopes=SCOPES
+        )
+    else:
+        # 2. Fallback for Local Development
+        if not os.path.exists('service_account.json'):
+            raise ValueError("No Google Credentials found! Missing service_account.json or GOOGLE_CREDENTIALS_JSON env var.")
+        
+        creds = service_account.Credentials.from_service_account_file(
+            'service_account.json', scopes=SCOPES
+        )
+        
     return build('drive', 'v3', credentials=creds)
 
 def get_or_create_folder(name, parent_id):
