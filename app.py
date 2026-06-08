@@ -540,16 +540,38 @@ def login_google():
     
 @app.route('/auth/callback')
 def auth_callback():
-    # Google sends an authorization code back in the URL
-    code = request.args.get('code')
-    
-    if code:
-        try:
-            # Exchange the code for a secure Supabase session
-            res = supabase.auth.exchange_code_for_session({"auth_code": code})
+    # Python can't read URL hashtags, so we use a tiny JavaScript snippet
+    # to catch the Supabase token and send it securely to our Python session route.
+    return """
+    <html><body>
+    <script>
+        if (window.location.hash) {
+            // Extract the access token from the URL hashtag
+            const params = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = params.get('access_token');
             
-            if res.user:
-                # Log the user into your Flask session
+            if (accessToken) {
+                // Pass it to the Python backend
+                window.location.href = '/auth/set_session?token=' + accessToken;
+            } else {
+                window.location.href = '/login';
+            }
+        } else {
+            window.location.href = '/login';
+        }
+    </script>
+    </body></html>
+    """
+
+@app.route('/auth/set_session')
+def set_session():
+    token = request.args.get('token')
+    if token:
+        try:
+            # Use the access token to get the user's secure info directly from Supabase
+            res = supabase.auth.get_user(token)
+            
+            if res and res.user:
                 email = res.user.email
                 session['user'] = email
                 
@@ -562,10 +584,9 @@ def auth_callback():
                 
                 return redirect(url_for('root'))
         except Exception as e:
-            flash(f"Google Login Failed: {str(e)}", "error")
+            flash(f"Session Error: {str(e)}", "error")
             return redirect(url_for('login'))
             
-    # If no code is present or something fails, send them back to login
     flash("Authentication failed.", "error")
     return redirect(url_for('login'))
 
