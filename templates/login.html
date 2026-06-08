@@ -26,75 +26,64 @@
           {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('login') }}" method="POST" id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="password-input">
-                        <input type="password" id="password" name="password" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword()">👁</button>
-                    </div>
-                </div>
-                
-                <div class="remember-me">
-                    <input type="checkbox" id="remember" name="remember">
-                    <label for="remember">Remember me</label>
-                </div>
+        <<form action="{{ url_for('login') }}" method="POST" class="login-form" id="loginForm">
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="user@gmail.com" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••••••" required>
+            </div>
 
-                <button type="submit" class="btn-login">Login</button>
-                
-                <div class="divider"><span>OR</span></div>
-                <a href="{{ url_for('login_google') }}" class="btn-google">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo">
-                    Sign in with Google
-                </a>
-            </form>
+            <div class="form-options">
+                <label><input type="checkbox" id="remember" name="remember"> Remember me</label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
 
-            <p class="signup-link">Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
-        </div>
+            <button type="submit" class="sign-in-btn">
+                <span class="btn-icon">➔</span> Sign In
+            </button>
+            
+            <div class="divider"><span>Or continue with</span></div>
+            
+            <a href="{{ url_for('login_google') }}" class="google-btn text-decoration-none">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo">
+                Sign in with Google
+            </a>
+        </form>
+
+        <p class="signup-text">Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
     </div>
+</div>
 
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-            } else {
-                passwordInput.type = 'password';
-            }
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const rememberCheck = document.getElementById("remember");
+        const loginForm = document.getElementById("loginForm");
+
+        if (localStorage.getItem("rememberMe") === "true") {
+            emailInput.value = localStorage.getItem("savedEmail") || "";
+            passwordInput.value = localStorage.getItem("savedPassword") || "";
+            rememberCheck.checked = true;
         }
 
-        // NEW: Remember Me Functionality
-        document.addEventListener("DOMContentLoaded", function() {
-            const emailInput = document.getElementById("email");
-            const passwordInput = document.getElementById("password");
-            const rememberCheck = document.getElementById("remember");
-            const loginForm = document.getElementById("loginForm");
-
-            // Check if credentials were saved previously
-            if (localStorage.getItem("rememberMe") === "true") {
-                emailInput.value = localStorage.getItem("savedEmail") || "";
-                passwordInput.value = localStorage.getItem("savedPassword") || "";
-                rememberCheck.checked = true;
+        loginForm.addEventListener("submit", function() {
+            if (rememberCheck.checked) {
+                localStorage.setItem("rememberMe", "true");
+                localStorage.setItem("savedEmail", emailInput.value);
+                localStorage.setItem("savedPassword", passwordInput.value);
+            } else {
+                localStorage.removeItem("rememberMe");
+                localStorage.removeItem("savedEmail");
+                localStorage.removeItem("savedPassword");
             }
-
-            // Save credentials to browser storage when form is submitted
-            loginForm.addEventListener("submit", function() {
-                if (rememberCheck.checked) {
-                    localStorage.setItem("rememberMe", "true");
-                    localStorage.setItem("savedEmail", emailInput.value);
-                    localStorage.setItem("savedPassword", passwordInput.value);
-                } else {
-                    localStorage.removeItem("rememberMe");
-                    localStorage.removeItem("savedEmail");
-                    localStorage.removeItem("savedPassword");
-                }
-            });
         });
-    </script>
+    });
+</script>
 
         <p class="signup-text">Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
         
