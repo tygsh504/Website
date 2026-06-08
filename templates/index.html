@@ -248,5 +248,23 @@
             }
         });
     </script>
+    <script>
+        // NEW: Supabase Token Catcher Fallback
+        // If Supabase accidentally redirects to the homepage instead of the callback route,
+        // this script will catch the login token and process it.
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.location.hash && window.location.hash.includes("access_token")) {
+                const params = new URLSearchParams(window.location.hash.substring(1));
+                const accessToken = params.get('access_token');
+                
+                if (accessToken) {
+                    // Temporarily change the text of the screen so the user knows they are logging in
+                    document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; font-family:sans-serif;'>Authenticating...</h2>";
+                    // Send the token to Python to start the session
+                    window.location.href = '/auth/set_session?token=' + accessToken;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
