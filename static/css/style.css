@@ -827,7 +827,57 @@ input[type="checkbox"] {
     display: none;
 }
 
-/* --- MOBILE VIEW (Screens smaller than 768px) --- */
+/* --- Login Page New Features --- */
+.remember-me {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #4b5563;
+}
+.remember-me input {
+    margin-right: 8px;
+    cursor: pointer;
+}
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #d1d5db;
+}
+.divider span {
+    padding: 0 10px;
+}
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #374151;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+.btn-google img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+.btn-google:hover {
+    background-color: #f3f4f6;
+}
+
 /* --- MOBILE VIEW (Screens smaller than 768px) --- */
 @media (max-width: 768px) {
     /* Stack the About section and feature cards vertically */

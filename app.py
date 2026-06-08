@@ -517,5 +517,26 @@ def disease_map():
                         
     return render_template('disease_map.html', map_data=map_data, user_name=session.get('user_name'))
 
+@app.route('/login/google')
+def login_google():
+    try:
+        # Get the current domain URL dynamically
+        host_url = request.host_url
+        
+        # Tell Supabase to initiate Google Login
+        response = supabase.auth.sign_in_with_oauth({
+            "provider": "google",
+            "options": {
+                # Where Supabase should send the user after logging in
+                "redirect_to": f"{host_url}auth/callback"
+            }
+        })
+        
+        # Redirect the user to the Google login screen provided by Supabase
+        return redirect(response.url)
+    except Exception as e:
+        flash(f"Error connecting to Google: {str(e)}", 'error')
+        return redirect(url_for('login'))
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
