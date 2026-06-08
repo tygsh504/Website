@@ -10,3 +10,4 @@ service_account.json
 *.pth
 /segmentation_models_pytorch
 temp_mask.png
+/processor.py

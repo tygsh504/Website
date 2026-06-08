@@ -811,41 +811,102 @@ input[type="checkbox"] {
 .td-location { color: #6b7280; font-size: 0.9rem; }
 .d-none { display: none; }
 
+/* --- Mobile Menu Button Base --- */
+.mobile-menu-btn {
+    display: none; /* Hidden on computers */
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+.navbar.scrolled .mobile-menu-btn {
+    color: #111827; /* Turns dark when you scroll down */
+}
+.mobile-only-auth {
+    display: none;
+}
+
+/* --- MOBILE VIEW (Screens smaller than 768px) --- */
 /* --- MOBILE VIEW (Screens smaller than 768px) --- */
 @media (max-width: 768px) {
-    /* Stack the About section vertically instead of side-by-side */
-    .about-container {
-        flex-direction: column;
-        gap: 30px;
-    }
+    /* Stack the About section and feature cards vertically */
+    .about-container { flex-direction: column; gap: 30px; }
+    .features-container { flex-direction: column; }
 
-    /* Stack the feature cards vertically */
-    .features-container {
-        flex-direction: column;
-    }
-
-    /* Fix the navigation bar padding and layout */
-    .navbar {
-        padding: 15px 20px;
-    }
-
-    /* Hide the text links on mobile and just show a 'Menu' icon (requires HTML update for a hamburger menu) */
-    .nav-links {
-        display: none; 
-    }
+    /* Fix the navigation bar padding */
+    .navbar { padding: 15px 20px; }
 
     /* Reduce giant text sizes for mobile screens */
-    .main-title {
-        font-size: 2.5rem;
+    .main-title { font-size: 2.5rem; }
+    .sub-title { font-size: 1.8rem; }
+    .login-container { padding: 30px 20px; width: 90%; }
+
+    /* --- ALIGNMENT FIX: 2x2 Grid for Stats Section --- */
+    .stats-container {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr; /* Makes two columns */
+        gap: 30px 10px;
+        padding: 0 10px;
     }
-    .sub-title {
-        font-size: 1.8rem;
+    .stat-item h3 { font-size: 2.2rem; }
+    .stat-item p { font-size: 0.9rem; }
+
+    /* --- HAMBURGER MENU FIX --- */
+    .mobile-menu-btn { 
+        display: block; 
+        position: absolute; 
+        right: 20px; 
+        top: 18px; 
+    }
+    
+    .user-actions { 
+        display: none; /* Hide desktop auth buttons to save space */
+    }
+    
+    .mobile-only-auth { 
+        display: block; 
     }
 
-    /* Make the login box fit the screen */
-    .login-container {
-        padding: 30px 20px;
-        width: 90%;
+    /* Style the hidden menu that slides down */
+    .nav-links {
+        display: none; /* Hidden until button is clicked */
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        flex-direction: column;
+        padding: 10px 0 20px 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transform: translateX(-50%) !important; /* Overrides the horizontal center trick */
+    }
+
+    /* Activated via Javascript */
+    .nav-links.show-mobile {
+        display: flex;
+    }
+
+    /* Force links to be visible on the white dropdown background */
+    .nav-links a {
+        color: #111827 !important;
+        text-shadow: none !important;
+        padding: 12px 20px;
+        width: 100%;
+        text-align: center;
+        display: block;
+    }
+
+    /* Make dropdown open smoothly on mobile without hover */
+    .dropdown-content {
+        position: static;
+        display: none;
+        box-shadow: none;
+        background: #f3f4f6;
+        width: 100%;
+    }
+    .dropdown:hover .dropdown-content, .dropdown:active .dropdown-content {
+        display: block;
     }
 }
 

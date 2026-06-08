@@ -21,6 +21,7 @@ from google.oauth2.credentials import Credentials
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Load environment variables from .env file
 load_dotenv()
@@ -67,20 +68,52 @@ DATABASE_FOLDER_ID = '1fHZKA6JMf1cJyxWM8dGEEBAPmxyQiDJY'
 
 #     return build('drive', 'v3', credentials=creds)
 
+# def get_drive_service():
+#     # 1. Try to load from Vercel Environment Variable
+#     creds_json_str = os.environ.get('GOOGLE_OAUTH_TOKEN_JSON')
+
+#     if creds_json_str:
+#         # We are on Vercel
+#         creds_info = json.loads(creds_json_str)
+#         creds = Credentials.from_authorized_user_info(creds_info, scopes=SCOPES)
+#     else:
+#         # 2. Fallback for Local Development
+#         if not os.path.exists('token.json'):
+#             raise ValueError("No Google Credentials found! Missing token.json or GOOGLE_OAUTH_TOKEN_JSON env var.")
+
+#         creds = Credentials.from_authorized_user_file('token.json', scopes=SCOPES)
+
+#     return build('drive', 'v3', credentials=creds, static_discovery=False, cache_discovery=False)
 def get_drive_service():
+    creds = None
+    
     # 1. Try to load from Vercel Environment Variable
     creds_json_str = os.environ.get('GOOGLE_OAUTH_TOKEN_JSON')
-
+    
     if creds_json_str:
-        # We are on Vercel
         creds_info = json.loads(creds_json_str)
         creds = Credentials.from_authorized_user_info(creds_info, scopes=SCOPES)
-    else:
-        # 2. Fallback for Local Development
-        if not os.path.exists('token.json'):
-            raise ValueError("No Google Credentials found! Missing token.json or GOOGLE_OAUTH_TOKEN_JSON env var.")
+    
+    # 2. Local Development: Try loading from token.json
+    elif os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        
+        # Refresh if expired
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            # Save the refreshed token back to local file
+            with open('token.json', 'w') as token:
+                token.write(creds.to_json())
 
-        creds = Credentials.from_authorized_user_file('token.json', scopes=SCOPES)
+    # 3. If no creds exist, run the local auth flow (only if credentials.json is present)
+    if not creds or not creds.valid:
+        if os.path.exists('credentials.json'):
+            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+            with open('token.json', 'w') as token:
+                token.write(creds.to_json())
+        else:
+            raise ValueError("Credentials not found! You must either set GOOGLE_OAUTH_TOKEN_JSON on Vercel or have credentials.json locally.")
 
     return build('drive', 'v3', credentials=creds, static_discovery=False, cache_discovery=False)
 

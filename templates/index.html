@@ -9,7 +9,7 @@
 </head>
 <body class="dashboard-body">
     <header>
-        <nav class="navbar">
+        <!-- <nav class="navbar">
             <div class="logo">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> 
                 <strong>CropGuard AI</strong>
@@ -28,6 +28,52 @@
                 <li><a href="{{ url_for('result') }}">Result</a></li>
                 <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
                 <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
+            </ul>
+
+            <div class="user-actions">
+                {% if user_name %}
+                    <span class="user-name">{{ user_name }}</span>
+                    <a href="{{ url_for('logout') }}" class="logout-btn">
+                        <span class="icon">⏻</span> Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-login-nav">Login</a>
+                    <a href="{{ url_for('signup') }}" class="btn-signup-nav">Sign Up</a>
+                {% endif %}
+            </div>
+        </nav> -->
+        <nav class="navbar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CropGuard Logo" class="nav-logo-img"> 
+                <strong>CropGuard AI</strong>
+            </div>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            
+            <ul class="nav-links">
+                <li><a href="{{ url_for('root') }}" class="active">Home</a></li>
+                <li class="dropdown">
+                    <a href="{{ url_for('upload_menu') }}" class="dropbtn">Upload ▾</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('upload_image') }}">Upload Image</a>
+                        <a href="{{ url_for('capture_image') }}">Capture Image</a>
+                        <a href="{{ url_for('history') }}">History</a>
+                    </div>
+                </li>
+                <li><a href="{{ url_for('result') }}">Result</a></li>
+                <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                <li><a href="{{ url_for('disease_map') }}">Disease Map</a></li>
+
+                <li class="mobile-only-auth" style="margin-top: 15px; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+                    {% if user_name %}
+                        <a href="{{ url_for('logout') }}" style="color: #ef4444 !important; font-weight: bold;">Logout ({{ user_name }})</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}">Login</a>
+                        <a href="{{ url_for('signup') }}" style="color: #1b332a !important; font-weight: bold;">Sign Up</a>
+                    {% endif %}
+                </li>
             </ul>
 
             <div class="user-actions">
@@ -180,6 +226,21 @@
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
             // If scrolled past 50px, add the white background style
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        // NEW: Function to open/close the mobile menu
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('show-mobile');
+        }
+
+        // Your existing scroll script...
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
             if (window.scrollY > 50) {
                 navbar.classList.add('scrolled');
             } else {
