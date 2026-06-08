@@ -139,6 +139,34 @@ def get_or_create_folder(name, parent_id):
 
 @app.route('/')
 def root():
+    # --- NEW: Catch Google Login Code on the Homepage ---
+    code = request.args.get('code')
+    
+    if code:
+        try:
+            # Exchange the code for a secure Supabase session
+            res = supabase.auth.exchange_code_for_session({"auth_code": code})
+            
+            if res and res.user:
+                # Set up the user session
+                email = res.user.email
+                session['user'] = email
+                
+                user_metadata = res.user.user_metadata
+                session['user_name'] = user_metadata.get('full_name') if user_metadata else email.split('@')[0]
+                
+                # Create/get their personal Google Drive folder
+                user_folder_name = email.split('@')[0]
+                session['user_folder_id'] = get_or_create_folder(user_folder_name, DATABASE_FOLDER_ID)
+                
+                # Redirect to the homepage again to wipe the ugly ?code= from the URL bar
+                return redirect(url_for('root'))
+        except Exception as e:
+            flash(f"Google Login Error: {str(e)}", "error")
+            return redirect(url_for('login'))
+    # ---------------------------------------------------
+
+    # Normal Homepage Load
     user_name = session.get('user_name')
     return render_template('index.html', user_name=user_name)
 
