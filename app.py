@@ -520,19 +520,20 @@ def disease_map():
 @app.route('/login/google')
 def login_google():
     try:
-        # Get the current domain URL dynamically
         host_url = request.host_url
         
+        # Force HTTPS when deployed on Vercel (ignore for local testing)
+        if "localhost" not in host_url and "127.0.0.1" not in host_url:
+            host_url = host_url.replace("http://", "https://")
+            
         # Tell Supabase to initiate Google Login
         response = supabase.auth.sign_in_with_oauth({
             "provider": "google",
             "options": {
-                # Where Supabase should send the user after logging in
                 "redirect_to": f"{host_url}auth/callback"
             }
         })
         
-        # Redirect the user to the Google login screen provided by Supabase
         return redirect(response.url)
     except Exception as e:
         flash(f"Error connecting to Google: {str(e)}", 'error')
