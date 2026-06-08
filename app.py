@@ -253,12 +253,17 @@ def upload_image():
             uploaded_count = 0
             for file in files:
                 if file.filename and file.mimetype.startswith('image/'):
-                    # Match the specific GPS coordinates for this individual file
-                    gps = next((m for m in file_gps_map if m['name'] == file.filename), {"lat": "Unknown", "lon": "Unknown"})
+                    
+                    # --- NEW FIX: Strip any folder paths sent by the browser ---
+                    # Handles both forward slashes and backslashes
+                    base_filename = file.filename.replace('\\', '/').split('/')[-1]
+                    
+                    # Match the specific GPS coordinates using the cleaned filename
+                    gps = next((m for m in file_gps_map if m['name'] == base_filename), {"lat": "Unknown", "lon": "Unknown"})
                     
                     # Save individual location in the file description
                     file_metadata = {
-                        'name': file.filename,
+                        'name': base_filename,  # Use base_filename so it doesn't create weird paths in Drive
                         'parents': [ori_image_folder_id], 
                         'description': f"Lat: {gps['lat']}, Long: {gps['lon']}"
                     }
