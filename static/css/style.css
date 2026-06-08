@@ -870,7 +870,7 @@ input[type="checkbox"] {
 
     /* Style the hidden menu that slides down */
     .nav-links {
-        display: none; /* Hidden until button is clicked */
+        display: none;
         position: absolute;
         top: 100%;
         left: 0;
@@ -879,7 +879,7 @@ input[type="checkbox"] {
         flex-direction: column;
         padding: 10px 0 20px 0;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        transform: translateX(-50%) !important; /* Overrides the horizontal center trick */
+        transform: none !important; /* <-- FIXED */
     }
 
     /* Activated via Javascript */
