@@ -26,7 +26,7 @@
           {% endif %}
         {% endwith %}
 
-        <<form action="{{ url_for('login') }}" method="POST" class="login-form" id="loginForm">
+        <form action="{{ url_for('login') }}" method="POST" class="login-form" id="loginForm">
             <div class="input-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" placeholder="user@gmail.com" required>
@@ -56,38 +56,32 @@
 
         <p class="signup-text">Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
     </div>
-</div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const emailInput = document.getElementById("email");
-        const passwordInput = document.getElementById("password");
-        const rememberCheck = document.getElementById("remember");
-        const loginForm = document.getElementById("loginForm");
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const emailInput = document.getElementById("email");
+            const passwordInput = document.getElementById("password");
+            const rememberCheck = document.getElementById("remember");
+            const loginForm = document.getElementById("loginForm");
 
-        if (localStorage.getItem("rememberMe") === "true") {
-            emailInput.value = localStorage.getItem("savedEmail") || "";
-            passwordInput.value = localStorage.getItem("savedPassword") || "";
-            rememberCheck.checked = true;
-        }
-
-        loginForm.addEventListener("submit", function() {
-            if (rememberCheck.checked) {
-                localStorage.setItem("rememberMe", "true");
-                localStorage.setItem("savedEmail", emailInput.value);
-                localStorage.setItem("savedPassword", passwordInput.value);
-            } else {
-                localStorage.removeItem("rememberMe");
-                localStorage.removeItem("savedEmail");
-                localStorage.removeItem("savedPassword");
+            if (localStorage.getItem("rememberMe") === "true") {
+                emailInput.value = localStorage.getItem("savedEmail") || "";
+                passwordInput.value = localStorage.getItem("savedPassword") || "";
+                rememberCheck.checked = true;
             }
-        });
-    });
-</script>
 
-        <p class="signup-text">Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
-        
-        <div class="divider"><span>Or continue with</span></div>
-    </div>
+            loginForm.addEventListener("submit", function() {
+                if (rememberCheck.checked) {
+                    localStorage.setItem("rememberMe", "true");
+                    localStorage.setItem("savedEmail", emailInput.value);
+                    localStorage.setItem("savedPassword", passwordInput.value);
+                } else {
+                    localStorage.removeItem("rememberMe");
+                    localStorage.removeItem("savedEmail");
+                    localStorage.removeItem("savedPassword");
+                }
+            });
+        });
+    </script>
 </body>
 </html>

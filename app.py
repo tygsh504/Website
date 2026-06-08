@@ -537,6 +537,37 @@ def login_google():
     except Exception as e:
         flash(f"Error connecting to Google: {str(e)}", 'error')
         return redirect(url_for('login'))
+    
+@app.route('/auth/callback')
+def auth_callback():
+    # Google sends an authorization code back in the URL
+    code = request.args.get('code')
+    
+    if code:
+        try:
+            # Exchange the code for a secure Supabase session
+            res = supabase.auth.exchange_code_for_session({"auth_code": code})
+            
+            if res.user:
+                # Log the user into your Flask session
+                email = res.user.email
+                session['user'] = email
+                
+                user_metadata = res.user.user_metadata
+                session['user_name'] = user_metadata.get('full_name') if user_metadata else email.split('@')[0]
+                
+                # Create/get their personal Google Drive folder
+                user_folder_name = email.split('@')[0]
+                session['user_folder_id'] = get_or_create_folder(user_folder_name, DATABASE_FOLDER_ID)
+                
+                return redirect(url_for('root'))
+        except Exception as e:
+            flash(f"Google Login Failed: {str(e)}", "error")
+            return redirect(url_for('login'))
+            
+    # If no code is present or something fails, send them back to login
+    flash("Authentication failed.", "error")
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
