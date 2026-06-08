@@ -97,17 +97,21 @@ def get_drive_service():
     # 2. Local Development: Try loading from token.json
     elif os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        
-        # Refresh if expired
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-            # Save the refreshed token back to local file
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json())
 
-    # 3. If no creds exist, run the local auth flow (only if credentials.json is present)
+    # 3. Check validity and refresh if expired
     if not creds or not creds.valid:
-        if os.path.exists('credentials.json'):
+        if creds and creds.expired and creds.refresh_token:
+            # Refresh the token!
+            creds.refresh(Request())
+            
+            # Only attempt to save the refreshed token to a file if we are running locally
+            # (Vercel has a read-only file system, so writing to token.json will crash it)
+            if os.path.exists('token.json'):
+                with open('token.json', 'w') as token:
+                    token.write(creds.to_json())
+                    
+        # 4. If no refresh token exists, fall back to initial local setup
+        elif os.path.exists('credentials.json'):
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
             with open('token.json', 'w') as token:
